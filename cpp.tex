@@ -1,21 +1,24 @@
 \documentclass{beamer}
 
 \usepackage{beamerthemesplit}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}[page number]{}
+
 \usepackage{graphicx}
 \usepackage{color}
 \usepackage{listings}
 \usepackage{verbatim}
-\usepackage{url}
 
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}
+\setsansfont{TeX Gyre Heros}
 
 \lstset{breakatwhitespace=true,
 language=C++,
 basicstyle=\footnotesize\ttfamily,
 keywordstyle=\color{blue}\ttfamily,
 stringstyle=\color{red}\ttfamily,
-commentstyle=\color{green}\ttfamily,
+commentstyle=\color{brown}\ttfamily,
 morecomment=[l][\color{magenta}]{\#}keepspaces=true,
 breaklines=true,
 tabsize=3,
@@ -55,7 +58,9 @@ frame=single}
   \begin{lstlisting}[lang=Java]
 int i;
 double d;
+
 Foo foo = new Foo();
+
 Foo[] a = new Foo[5];
 \end{lstlisting}
   \begin{itemize}
@@ -71,16 +76,18 @@ Foo[] a = new Foo[5];
 \begin{frame}[fragile]
   \frametitle{C++ types}
   \begin{lstlisting}
-int i;
+uint32_t i;
 double d;
+
 Foo foo;
 Foo *fooptr = new Foo();
 const Foo *fooptr2 = &foo;
 Foo fooref(foo);
+
 Foo a[5];
 \end{lstlisting}
   \begin{itemize}
-  \item Primitive types
+  \item Primitive types, including unsigned, of standard sizes
   \item Classes have no common root
   \item All types may be instances, pointers or references
   \item Pointers and references may refer to \texttt{const} type
@@ -95,10 +102,10 @@ Foo a[5];
 {
   Image *i = new Image(filename);
 
-  read_plane(i); // throws exception
+  i->read_plane(); // throws exception
 
   // Memory leaked here
-  // Memory not freed when pointer f goes out of scope
+  // Memory not freed when pointer i goes out of scope
 }
 \end{lstlisting}
   \begin{itemize}
@@ -110,15 +117,15 @@ Foo a[5];
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{C++ pointers: safe ``smart'' pointers}
+  \frametitle{C++ pointers: safe “smart” pointers}
   \begin{lstlisting}
-{
-  std::shared_ptr<Image> i(std::make_shared<Image>());
+{ // Image *i = new Image(filename);
+  std::shared_ptr<Image> i(std::make_shared<Image>(filename));
 
-  read_plane(i); // throws exception
+  i->read_plane(); // throws exception
 
   // Memory freed when i's destructor is
-  // run at end of block
+  // run at exit of block scope
 }
 
 \end{lstlisting}
@@ -131,12 +138,9 @@ Foo a[5];
   \end{itemize}
 \end{frame}
 
-
 \begin{frame}[fragile]
-  \frametitle{RAII}
-\begin{block}{RAII: Resource Acquisition Is Initialisation}
-General concept: A resource is managed by proxy object lifetime
-  \begin{itemize}
+  \frametitle{RAII: Resource Acquisition Is Initialisation}
+    \begin{itemize}
     \item Resource is acquired when object is intialised
     \item Resource is released when object is destroyed
     \item C++ language and runtime guarantees make resource management
@@ -144,16 +148,140 @@ General concept: A resource is managed by proxy object lifetime
     \item Can manage any resource (memory, files, locks)
     \item Safe for use in any scope
     \item Exception safe
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ reference variants}
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily]
+//          Non-constant                              Constant
+// -----------------------------       ---------------------------------------
+// Pointer
+                       Image *i;                               const Image *i;
+                Image * const i;                        const Image * const i;
+
+// Reference
+                       Image& i;                               const Image& i;
+
+// Shared pointer
+       std::shared_ptr<Image> i;               std::shared_ptr<const Image> i;
+ const std::shared_ptr<Image> i;         const std::shared_ptr<const Image> i;
+
+// Shared pointer reference
+      std::shared_ptr<Image>& i;              std::shared_ptr<const Image>& i;
+const std::shared_ptr<Image>& i;        const std::shared_ptr<const Image>& i;
+
+// Weak pointer
+         std::weak_ptr<Image> i;                 std::weak_ptr<const Image> i;
+   const std::weak_ptr<Image> i;           const std::weak_ptr<const Image> i;
+
+// Weak pointer reference
+        std::weak_ptr<Image>& i;                std::weak_ptr<const Image>& i;
+  const std::weak_ptr<Image>& i;          const std::weak_ptr<const Image>& i;
+\end{lstlisting}
+\begin{center}
+  Java has one reference type.  Here, we have 22.
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ reference usage rationalised}
+\begin{block}{Class members}
+  \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+Image i;                     // Concrete instance
+std::shared_ptr<Image> i;    // Reference
+std::weak_ptr<Image> i;      // Weak reference
+\end{lstlisting}
+\end{block}
+\begin{block}{Arguments}
+  \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+void read_plane(const Image& image);
+void read_plane(const std::shared_ptr<Image>& image);
+\end{lstlisting}
+\end{block}
+\begin{block}{Return}
+  \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+                  Image get_image(); // ownership transferred
+                 Image& get_image(); // ownership retained
+ std::shared_ptr<Image> get_image(); // ownership shared/trans
+std::shared_ptr<Image>& get_image(); // ownership shared
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Safe array passing}
+  \begin{lstlisting}
+class Image
+{
+  // Unsafe; size unknown
+  uint8_t[] getLUT();
+       void setLUT(uint8_t[]& lut);
+
+  // Safe; size defined
+  typedef std::array<uint8_t, 256> LUT;
+  const LUT& getLUT() const;
+        void setLUT(const LUT&);
+}
+\end{lstlisting}
+  \begin{itemize}
+  \item C/C++ arrays essentially decay to plain pointers
+  \item Plain pointers have no associated size information
+  \item \texttt{std::array} is an array-like object
+  \item \texttt{std::array} size defined in the template
+  \item \texttt{std::array} can be passed like any object
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+\begin{block}{Types with a common base}
+  \begin{lstlisting}
+    std::vector<std::shared_ptr<Base> > v;
+    v.push_back(derived1);
+    v.push_back(std::make_shared<Derived2>());
+\end{lstlisting}
+  \begin{itemize}
+  \item Stores any type derived from \texttt{Base}
+  \end{itemize}
+\end{block}
+\begin{block}{Types with no common base}
+  \begin{lstlisting}
+    typedef boost::variant<int, std::string> variants;
+    std::vector<variants> v;
+    v.push_back(43);
+    v.push_back("ATTO 647N")
+\end{lstlisting}
+  \begin{itemize}
+  \item Stores a discriminated set of types
+  \item Used to store original metadata
   \end{itemize}
 \end{block}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+\begin{block}{Arbitrary types}
+  \begin{lstlisting}
+    std::vector<boost::any> v;
+    v.push_back(anything);
+\end{lstlisting}
+  \begin{itemize}
+  \item Flexible, but unless you can \texttt{dynamic\_cast} each type,
+    you won't be able to handle all stored items.
+  \item Not currently used
+  \end{itemize}
+\end{block}
+\end{frame}
+
+
 
 \begin{frame}[fragile]
   \frametitle{API Reference}
 \begin{block}{Doxygen}
   \begin{itemize}
   \item Doxygen is used to document all APIs
-    \item \url{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}
+    \item \href{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}{Example}
   \end{itemize}
 \end{block}
 \end{frame}
@@ -167,8 +295,10 @@ General concept: A resource is managed by proxy object lifetime
     \item OME Team, Dundee
       \begin{itemize}
       \item Jason Swedlow
+      \item Jean-Marie Burel
       \item Mark Carroll
-      \item and all of the team
+      \item Andrew Patterson
+      \item …and the rest of the team
       \end{itemize}
     \end{itemize}
   }
