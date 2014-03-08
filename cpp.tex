@@ -8,6 +8,7 @@
 \usepackage{color}
 \usepackage{listings}
 \usepackage{verbatim}
+\usepackage{setspace}
 
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}
@@ -50,12 +51,12 @@ frame=single}
 \tableofcontents
 }
 
-\section{C++ basics}
+\section{C++ and Java incompatibity}
 \subsection{C++ and Java types}
 
 \begin{frame}[fragile]
   \frametitle{Java types}
-  \begin{lstlisting}[lang=Java]
+  \begin{lstlisting}[language=Java]
 int i;
 double d;
 
@@ -82,7 +83,7 @@ double d;
 Foo foo;
 Foo *fooptr = new Foo();
 const Foo *fooptr2 = &foo;
-Foo fooref(foo);
+Foo& fooref(foo);
 
 Foo a[5];
 \end{lstlisting}
@@ -95,6 +96,8 @@ Foo a[5];
   \item Destruction is deterministic
   \end{itemize}
 \end{frame}
+
+\subsection{Reference handling}
 
 \begin{frame}[fragile]
   \frametitle{C++ pointers: pitfalls}
@@ -209,6 +212,8 @@ std::shared_ptr<Image>& get_image(); // ownership shared
 \end{block}
 \end{frame}
 
+\subsection{Additional API concerns}
+
 \begin{frame}[fragile]
   \frametitle{Safe array passing}
   \begin{lstlisting}
@@ -264,7 +269,7 @@ class Image
 \begin{block}{Arbitrary types}
   \begin{lstlisting}
     std::vector<boost::any> v;
-    v.push_back(anything);
+    v.push_back(Anything);
 \end{lstlisting}
   \begin{itemize}
   \item Flexible, but unless you can \texttt{dynamic\_cast} each type,
@@ -274,14 +279,154 @@ class Image
 \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Interfaces}
+\begin{block}{Java}
+  Single inheritance, plus interfaces
+\end{block}
+\begin{block}{C++}
+  \begin{itemize}
+  \item Multiple inheritance
+  \item Interfaces are classes with:
+    \begin{itemize}
+      \item No instance variables
+      \item Pure virtual methods
+      \item \texttt{protected} default constructor
+      \item \texttt{virtual} destructor
+      \item Deleted copy constructor and assignment operator
+    \end{itemize}
+  \item Classes implementing interfaces:
+    \begin{itemize}
+      \item Use \texttt{public} inheritance for parent classes
+      \item Use \texttt{virtual public} inheritance for implemented interfaces
+    \end{itemize}
+  \end{itemize}
+\end{block}
+\end{frame}
 
+\section{Bio-Formats}
+\subsection{Building and installing}
+
+\begin{frame}[fragile]
+  \frametitle{Source layout}
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{semiverbatim}\tiny
+cpp
+├── cmake
+├── lib
+│   └── ome
+│       ├── bioformats
+│       │   └── detail
+│       ├── compat
+│       ├── internal
+│       ├── xerces
+│       │   └── dom
+│       └── xml
+│           ├── meta
+│           └── model
+│               ├── enums
+│               └── primitives
+└── test
+    ├── ome-bioformats
+    ├── ome-compat
+    ├── ome-internal
+    ├── ome-xerces
+    └── ome-xml
+\end{semiverbatim}
+      \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{block}{compat}
+        Compatibility workarounds
+      \end{block}
+      \begin{block}{internal}
+        Private implementation details
+      \end{block}
+      \begin{block}{xerces}
+        Xerces-C DOM wrappers
+      \end{block}
+      \begin{block}{xml}
+        OME XML model and metadata
+      \end{block}
+      \begin{block}{bioformats}
+        Bio-Formats reader and writer interfaces and implementations
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Configure}
+  \begin{semiverbatim}\footnotesize
+% mkdir /tmp/bioformats-build
+% cd /tmp/bioformats-build
+% GTEST_ROOT=/path/to/gtest cmake ~/code/bioformats
+\end{semiverbatim}
+\end{block}
+\begin{block}{Build}
+  \begin{semiverbatim}\footnotesize
+% make -j8
+\end{semiverbatim}
+\end{block}
+\begin{block}{Install}
+  \begin{semiverbatim}\footnotesize
+% make DESTDIR=/tmp/bioformats-install install
+\end{semiverbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Installed directories}
+  \begin{semiverbatim}\tiny
+/tmp/bioformats-install
+└── usr
+    └── local
+        ├── include
+        │   └── ome
+        │       ├── bioformats
+        │       ├── compat
+        │       ├── xerces
+        │       │   └── dom
+        │       └── xml
+        │           ├── meta
+        │           └── model
+        │               ├── enums
+        │               └── primitives
+        └── lib
+            └── x86_64-linux-gnu
+                └── cmake
+\end{semiverbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Installed libraries}
+  \begin{semiverbatim}\scriptsize
+/tmp/bioformats-install/usr/local/lib
+└── x86_64-linux-gnu
+    ├── cmake
+    │   ├── ome-bioformats-config.cmake
+    │   ├── ome-xerces-config.cmake
+    │   └── ome-xml-config.cmake
+    ├── libome-bioformats.so -> libome-bioformats.so.5.1.0
+    ├── libome-bioformats.so.5.1.0
+    ├── libome-xerces.so -> libome-xerces.so.5.1.0
+    ├── libome-xerces.so.5.1.0
+    ├── libome-xml.so -> libome-xml.so.5.1.0
+    └── libome-xml.so.5.1.0
+\end{semiverbatim}
+\end{block}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{API Reference}
 \begin{block}{Doxygen}
   \begin{itemize}
   \item Doxygen is used to document all APIs
-    \item \href{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}{Example}
+    \item \url{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}
   \end{itemize}
 \end{block}
 \end{frame}
