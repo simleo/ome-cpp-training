@@ -1,0 +1,196 @@
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{url}
+
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
+
+\lstset{breakatwhitespace=true,
+language=C++,
+basicstyle=\footnotesize\ttfamily,
+keywordstyle=\color{blue}\ttfamily,
+stringstyle=\color{red}\ttfamily,
+commentstyle=\color{green}\ttfamily,
+morecomment=[l][\color{magenta}]{\#}keepspaces=true,
+breaklines=true,
+tabsize=3,
+showstringspaces=false,
+extendedchars=true,
+frame=single}
+
+\newcommand*{\vcenteredhbox}[1]{\begingroup
+\setbox0=\hbox{#1}\parbox{\wd0}{\box0}\endgroup}
+
+\title{Bio-Formats C++ Conversion}
+\author{Roger Leigh}
+\date{March 2014\\University of Dundee}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{wellcome}}
+  \end{center}
+\end{frame}
+
+\section*{Overview}
+\frame{
+\frametitle{Overview}
+\tableofcontents
+}
+
+\section{C++ basics}
+\subsection{C++ and Java types}
+
+\begin{frame}[fragile]
+  \frametitle{Java types}
+  \begin{lstlisting}[lang=Java]
+int i;
+double d;
+Foo foo = new Foo();
+Foo[] a = new Foo[5];
+\end{lstlisting}
+  \begin{itemize}
+  \item Primitive types
+  \item Classes, all derived from root \texttt{Object}
+  \item No unsigned integer types
+  \item Objects are by reference only
+  \item Objects and arrays are always allocated with \texttt{new}
+  \item Destruction is non-deterministic
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ types}
+  \begin{lstlisting}
+int i;
+double d;
+Foo foo;
+Foo *fooptr = new Foo();
+const Foo *fooptr2 = &foo;
+Foo fooref(foo);
+Foo a[5];
+\end{lstlisting}
+  \begin{itemize}
+  \item Primitive types
+  \item Classes have no common root
+  \item All types may be instances, pointers or references
+  \item Pointers and references may refer to \texttt{const} type
+  \item Pointers may be \texttt{const}
+  \item Destruction is deterministic
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ pointers: pitfalls}
+  \begin{lstlisting}
+{
+  Image *i = new Image(filename);
+
+  read_plane(i); // throws exception
+
+  // Memory leaked here
+  // Memory not freed when pointer f goes out of scope
+}
+\end{lstlisting}
+  \begin{itemize}
+    \item \texttt{new} and \texttt{delete} must always be paired
+    \item Requires manual management of ownership and lifetime
+    \item Bare pointers are not exception-safe
+    \item Need to clean up for every exit point in a function
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ pointers: safe ``smart'' pointers}
+  \begin{lstlisting}
+{
+  std::shared_ptr<Image> i(std::make_shared<Image>());
+
+  read_plane(i); // throws exception
+
+  // Memory freed when i's destructor is
+  // run at end of block
+}
+
+\end{lstlisting}
+  \begin{itemize}
+    \item \texttt{shared\_ptr} object lifetime manages the resource
+    \item May be used as class members; lifetime is tied to class instance
+    \item Clean up for all exit points is automatic and safe
+    \item Allows ownership transfer and sharing
+    \item Allows reference without ownership using \texttt{weak\_ptr}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{RAII}
+\begin{block}{RAII: Resource Acquisition Is Initialisation}
+General concept: A resource is managed by proxy object lifetime
+  \begin{itemize}
+    \item Resource is acquired when object is intialised
+    \item Resource is released when object is destroyed
+    \item C++ language and runtime guarantees make resource management
+      deterministic and reliable
+    \item Can manage any resource (memory, files, locks)
+    \item Safe for use in any scope
+    \item Exception safe
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{API Reference}
+\begin{block}{Doxygen}
+  \begin{itemize}
+  \item Doxygen is used to document all APIs
+    \item \url{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\section{Acknowledgements}
+
+\frame{
+  \frametitle{Acknowledgements}
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item OME Team, Dundee
+      \begin{itemize}
+      \item Jason Swedlow
+      \item Mark Carroll
+      \item and all of the team
+      \end{itemize}
+    \end{itemize}
+  }
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item Micron, Oxford
+      \begin{itemize}
+      \item Douglas Russell
+      \end{itemize}
+    \item Glencoe Software
+      \begin{itemize}
+      \item Melissa Linkert
+      \item Josh Moore
+      \end{itemize}
+    \end{itemize}
+  }
+
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.4\textwidth]{wellcome}}
+  \end{center}
+}
+
+\end{document}
