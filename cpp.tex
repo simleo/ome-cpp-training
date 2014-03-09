@@ -9,6 +9,7 @@
 \usepackage{listings}
 \usepackage{verbatim}
 \usepackage{setspace}
+\usepackage{url}
 
 \usepackage{fontspec}
 \setmonofont{DejaVu Sans Mono}
@@ -51,7 +52,7 @@ frame=single}
 \tableofcontents
 }
 
-\section{C++ and Java incompatibity}
+\section{C++ and Java incompatibility}
 \subsection{C++ and Java types}
 
 \begin{frame}[fragile]
@@ -60,9 +61,9 @@ frame=single}
 int i;
 double d;
 
-Foo foo = new Foo();
+Pixels pixels = new Pixels();
 
-Foo[] a = new Foo[5];
+Pixels[] array = new Pixels[5];
 \end{lstlisting}
   \begin{itemize}
   \item Primitive types
@@ -80,12 +81,12 @@ Foo[] a = new Foo[5];
 uint32_t i;
 double d;
 
-Foo foo;
-Foo *fooptr = new Foo();
-const Foo *fooptr2 = &foo;
-Foo& fooref(foo);
+Pixels         pixels;
+Pixels        *pixelsptr1 = new Pixels();
+const Pixels  *pixelsptr2 = &pixels;
+Pixels&        pixelsref(pixels);
 
-Foo a[5];
+Pixels array[5];
 \end{lstlisting}
   \begin{itemize}
   \item Primitive types, including unsigned, of standard sizes
@@ -144,13 +145,15 @@ Foo a[5];
 \begin{frame}[fragile]
   \frametitle{RAII: Resource Acquisition Is Initialisation}
     \begin{itemize}
+    \item Class is a proxy for a resource
     \item Resource is acquired when object is intialised
     \item Resource is released when object is destroyed
+    \item Manage any resource (memory, files, locks)
     \item C++ language and runtime guarantees make resource management
       deterministic and reliable
-    \item Can manage any resource (memory, files, locks)
     \item Safe for use in any scope
     \item Exception safe
+    \item Used throughout modern C++ libraries and applications
     \end{itemize}
 \end{frame}
 
@@ -227,10 +230,10 @@ class Image
   typedef std::array<uint8_t, 256> LUT;
   const LUT& getLUT() const;
         void setLUT(const LUT&);
-}
+};
 \end{lstlisting}
   \begin{itemize}
-  \item C/C++ arrays essentially decay to plain pointers
+  \item C (C++) arrays essentially decay to plain pointers
   \item Plain pointers have no associated size information
   \item \texttt{std::array} is an array-like object
   \item \texttt{std::array} size defined in the template
@@ -243,11 +246,10 @@ class Image
 \begin{block}{Types with a common base}
   \begin{lstlisting}
     std::vector<std::shared_ptr<Base> > v;
-    v.push_back(derived1);
-    v.push_back(std::make_shared<Derived2>());
+    v.push_back(std::make_shared<Derived>());
 \end{lstlisting}
   \begin{itemize}
-  \item Stores any type derived from \texttt{Base}
+  \item Store any type derived from \texttt{Base}
   \end{itemize}
 \end{block}
 \begin{block}{Types with no common base}
@@ -258,7 +260,7 @@ class Image
     v.push_back("ATTO 647N")
 \end{lstlisting}
   \begin{itemize}
-  \item Stores a discriminated set of types
+  \item Store a set of discriminated types
   \item Used to store original metadata
   \end{itemize}
 \end{block}
@@ -361,7 +363,7 @@ cpp
   \begin{semiverbatim}\footnotesize
 % mkdir /tmp/bioformats-build
 % cd /tmp/bioformats-build
-% GTEST_ROOT=/path/to/gtest cmake ~/code/bioformats
+% cmake ~/code/bioformats
 \end{semiverbatim}
 \end{block}
 \begin{block}{Build}
@@ -374,6 +376,7 @@ cpp
 % make DESTDIR=/tmp/bioformats-install install
 \end{semiverbatim}
 \end{block}
+The build directory is separate from the source directory.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -431,7 +434,36 @@ cpp
 \end{block}
 \end{frame}
 
-\section{Acknowledgements}
+\begin{frame}[fragile]
+  \frametitle{Completed functionality}
+  \begin{itemize}
+  \item \texttt{cmake} build infrastructure
+  \item Platform compatibility infrastructure
+  \item \texttt{gtest} test framework
+  \item Xerces-C wrapper classes
+  \item \texttt{xsd-fu} C++ type handling and template conversion
+  \item OME-XML model objects and metadata stores
+  \item Core Bio-Formats interfaces and supporting classes
+  \item Linux and MacOS jenkins build infrastructure
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{TODO}
+  \begin{itemize}
+  \item Bio-Formats TIFF reader and writer
+  \item Bio-Formats OME-TIFF reader and writer
+  \item Bio-Formats OME-XML reader and writer
+  \item \texttt{showinf} and \texttt{bfconvert} equivalents
+  \item Comprehensive test cases
+  \item Windows jenkins build infrastructure
+  \item (Potential) Refactoring of the Java and C++ model and metadata code, and
+    some of the \texttt{FormatReader} and \texttt{FormatWriter}
+    interfaces
+  \end{itemize}
+\end{frame}
+
+\section*{Acknowledgements}
 
 \frame{
   \frametitle{Acknowledgements}
@@ -464,7 +496,7 @@ cpp
   \begin{center}
     \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
     \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
-    \vcenteredhbox{\includegraphics[width=0.4\textwidth]{wellcome}}
+    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
   \end{center}
 }
 
