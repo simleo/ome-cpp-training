@@ -12,7 +12,7 @@
 \usepackage{url}
 
 \usepackage{fontspec}
-\setmonofont{DejaVu Sans Mono}
+\setmonofont{Latin Modern Mono}
 \setsansfont{TeX Gyre Heros}
 
 \lstset{breakatwhitespace=true,
@@ -101,7 +101,7 @@ Pixels array[5];
 \subsection{Reference handling}
 
 \begin{frame}[fragile]
-  \frametitle{C++ pointers: pitfalls}
+  \frametitle{C++ pointers: pitfalls of “dumb” pointers}
   \begin{lstlisting}
 {
   Image *i = new Image(filename);
@@ -121,7 +121,7 @@ Pixels array[5];
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{C++ pointers: safe “smart” pointers}
+  \frametitle{C++ pointers: \texttt{std::shared\_ptr} as a “smart” pointer}
   \begin{lstlisting}
 { // Image *i = new Image(filename);
   std::shared_ptr<Image> i(std::make_shared<Image>(filename));
@@ -186,7 +186,7 @@ const std::shared_ptr<Image>& i;        const std::shared_ptr<const Image>& i;
   const std::weak_ptr<Image>& i;          const std::weak_ptr<const Image>& i;
 \end{lstlisting}
 \begin{center}
-  Java has one reference type.  Here, we have 22.
+  Java has one reference type.  Here, we have \textbf{22}…
 \end{center}
 \end{frame}
 
@@ -215,10 +215,25 @@ std::shared_ptr<Image>& get_image(); // ownership shared
 \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{C++ reference usage rationalised}
+  \begin{itemize}
+  \item Safety: References can not be \texttt{null}.
+  \item Storing polymorphic types requires use of a
+    \texttt{shared\_ptr}.
+  \item Safety: To avoid cyclic dependencies, use \texttt{weak\_ptr}.
+  \item Safety: To allow object destruction while maintaining a safe
+    reference, use \texttt{weak\_ptr}.
+  \item \texttt{weak\_ptr} is not directly usable.
+  \item \texttt{weak\_ptr} is convertible back to \texttt{shared\_ptr}
+    for use \emph{if the object is still in existence}.
+  \end{itemize}
+\end{frame}
+
 \subsection{Additional API concerns}
 
 \begin{frame}[fragile]
-  \frametitle{Safe array passing}
+  \frametitle{Safe array passing: \texttt{std::array} / \texttt{boost::array}}
   \begin{lstlisting}
 class Image
 {
@@ -252,7 +267,19 @@ class Image
   \item Store any type derived from \texttt{Base}
   \end{itemize}
 \end{block}
-\begin{block}{Types with no common base}
+\begin{block}{Java containers can be problematic}
+  \begin{itemize}
+  \item Java can store root \texttt{Object} in containers
+  \item Java can pass and return root \texttt{Object} in methods.
+  \item This isn't possible in C++: there is no root object.
+  \item An alternative approach is needed.
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+\begin{block}{Types with no common base: \texttt{boost::variant}}
   \begin{lstlisting}
     typedef boost::variant<int, std::string> variants;
     std::vector<variants> v;
@@ -264,43 +291,36 @@ class Image
   \item Used to store original metadata
   \end{itemize}
 \end{block}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-\begin{block}{Arbitrary types}
+\begin{block}{Arbitrary types: \texttt{boost::any}}
   \begin{lstlisting}
     std::vector<boost::any> v;
     v.push_back(Anything);
 \end{lstlisting}
   \begin{itemize}
-  \item Flexible, but unless you can \texttt{dynamic\_cast} each type,
-    you won't be able to handle all stored items.
-  \item Not currently used
+  \item Flexible, but need to cast to each type used to extract.
   \end{itemize}
 \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Interfaces}
-\begin{block}{Java}
-  Single inheritance, plus interfaces
+\begin{block}{Java: Single inheritance, plus interfaces}
 \end{block}
-\begin{block}{C++}
+\begin{block}{C++: Multiple inheritance}
   \begin{itemize}
-  \item Multiple inheritance
   \item Interfaces are classes with:
     \begin{itemize}
       \item No instance variables
       \item Pure virtual methods
       \item \texttt{protected} default constructor
-      \item \texttt{virtual} destructor
+      \item \texttt{public virtual} destructor
       \item Deleted copy constructor and assignment operator
     \end{itemize}
   \item Classes implementing interfaces:
     \begin{itemize}
-      \item Use \texttt{public} inheritance for parent classes
+      \item Use \texttt{public} inheritance for parent class
       \item Use \texttt{virtual public} inheritance for implemented interfaces
+      \item \texttt{virtual} destructor
     \end{itemize}
   \end{itemize}
 \end{block}
@@ -345,7 +365,7 @@ cpp
         Private implementation details
       \end{block}
       \begin{block}{xerces}
-        Xerces-C DOM wrappers
+        Xerces-C XML DOM wrappers
       \end{block}
       \begin{block}{xml}
         OME XML model and metadata
