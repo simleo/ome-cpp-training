@@ -1,0 +1,218 @@
+\documentclass{beamer}
+
+\include{common}
+
+\title{C++ Build Environment Setup for Bio-Formats and OMERO}
+\author{Roger Leigh}
+\date{August 2014\\University of Dundee}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{wellcome}}
+  \end{center}
+\end{frame}
+
+\section*{Overview}
+\frame{
+\frametitle{Overview}
+\tableofcontents
+}
+
+\section{Installation of prerequisites}
+\subsection{Compiler and toolchain}
+  \begin{itemize}
+  \item FreeBSD: LLVM/clang++ or GCC
+  \item Linux: GNU CC and GNU Binutils
+  \item MacOS X: XCode (custom LLVM/clang++)
+  \item Windows: Visual Studio or Visual Studio Express (MSVC/cl)
+  \end{itemize}
+
+  Earlier versions of MacOS X used GCC 4.2.
+\end{frame}
+
+\subsection{Package installation}
+  \begin{itemize}
+  \item FreeBSD: Ports (pkg)
+  \item Linux: Distribution package manager (e.g. apt-get or yum)
+  \item MacOS X: homebrew (brew)
+  \item Windows: Yeah, right.  Compile it all by hand for your specific
+    version of Visual Studio!  (Microsoft love to make development for
+    their platform easy and painless.  Not!)
+  \end{itemize}
+
+  On the next few pages, the needed packages for each platform will be
+  detailed.  This includes all packages needed for Bio-Formats and
+  OMERO including unit testing and API documentation generation; you
+  might not need them all but it doesn't hurt to have them all.
+\end{frame}
+
+\subsection{FreeBSD}
+
+Run ``pkg install'' to install:
+
+devel/apache-ant
+devel/boost-all
+devel/cmake
+devel/doxygen
+devel/git
+devel/googletest
+devel/ice
+graphics/graphviz
+graphics/tiff
+java/openjdk7
+java/junit
+lang/python
+lang/python27
+print/texlive-full
+science/hdf5
+textproc/py-genshi
+textproc/py-sphinx
+textproc/xerces-c3
+
+\subsection{Linux (Debian and Ubuntu)}
+
+Run ``apt-get install'' to install:
+
+ant ant-contrib ant-optional
+libboost-all-dev
+cmake
+doxygen
+git
+libgtest-dev
+libzeroc-ice35-dev ice35-services ice35-slice ice35-translators icebox python-zeroc-ice
+graphviz
+libtiff5-dev
+openjdk-7-jdk openjdk-7-jre
+junit4
+python python2.7
+texlive-full
+libhdf5-dev
+python-genshi
+python-sphinx
+libxerces-c-dev
+
+\subsection{Linux (CentOS and RHEL)}
+
+Run ``apt-get install'' to install:
+
+boost-devel
+cmake
+doxygen
+git
+gtest-devel
+graphviz
+libtiff-devel
+java-1.7.0-openjdk
+junit4
+python
+texlive-full
+hdf5-devel
+python-genshi
+xerces-c-devel
+
+Install the following by hand:
+
+ant
+junit
+ice (RPMs available)
+texlive (via install-tl)
+sphinx (via pip)
+
+\subsection{MacOS X (with homebrew)}
+
+Run ``brew install'' to install:
+
+ant
+boost
+cmake
+doxygen
+git
+graphviz
+hdf5
+ice
+libtiff-devel
+python
+xerces-c
+
+Install the following by hand:
+
+gtest (from zip or svn)
+java (JDK 1.7 from Oracle)
+texlive (via install-tl or MacTeX)
+sphinx (via pip)
+
+\subsection{Windows (entirely by hand)}
+
+Install the following by hand:
+
+Visual Studio
+ant
+cmake
+git (msysgit)
+ice (latest ZeroC installer or our 3.5.1 build)
+python (latest 2.7 from python.org; note must be 64-bit for 64-bit
+builds)
+java (latest JDK 1.7 from Oracle)
+genshi and sphinx (install setuptools and pip for python, then pip install them)
+
+graphviz and doxygen if required
+MikTeX if required
+
+Build gtest (no installation required)
+
+Then build and install the following by hand:
+
+For Bio-Formats only:
+
+zlib
+icu
+boost
+xerces
+tiff
+hdf5
+
+And possibly more--we haven't yet done a Bio-Formats C++ build on Windows.
+
+\section*{Acknowledgements}
+
+\frame{
+  \frametitle{Acknowledgements}
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item OME Team, Dundee
+      \begin{itemize}
+      \item Jason Swedlow
+      \item Jean-Marie Burel
+      \item Mark Carroll
+      \item Andrew Patterson
+      \item …and the rest of the team
+      \end{itemize}
+    \end{itemize}
+  }
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item Micron, Oxford
+      \begin{itemize}
+      \item Douglas Russell
+      \end{itemize}
+    \item Glencoe Software
+      \begin{itemize}
+      \item Melissa Linkert
+      \item Josh Moore
+      \end{itemize}
+    \end{itemize}
+  }
+
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+  \end{center}
+}
+
+\end{document}
