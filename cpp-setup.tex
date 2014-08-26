@@ -268,7 +268,38 @@ Build and install the following by hand (for Bio-Formats):
   \end{itemize}
 \end{frame}
 
-\section{Configuration}
+\subsection{Configuration}
+
+\begin{frame}
+  \frametitle{System configuration}
+  \begin{itemize}
+    \item In general, none of the tools should require any configuration
+      \item \LaTeX{} may require local font configuration to make the \TeX{} Gyre fonts available.
+        \begin{itemize}
+          \item Linux and FreeBSD: Use the provided \pkg{fontconfig}
+            template or create your own
+          \item MacOS X: Add to system using FontBook
+          \item Windows: May need adding to the system fonts if not
+            found automatically
+        \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Environment configuration}
+  \begin{itemize}
+    \item Primarily needed on Windows
+    \item Rather than setting globally, make a batch file which can set up the environment.
+    \item Activate a python virtualenv if needed
+    \item Ensure that all tools are on the user \texttt{PATH}
+      \begin{itemize}
+        \item \cmd{ant}, \cmd{cmake}, \cmd{doxygen}, \cmd{dot}, \cmd{git}, \cmd{python}, \cmd{java}, \cmd{sphinx}, \cmd{xelatex}
+      \end{itemize}
+    \item Set \texttt{CMAKE\_PREFIX\_PATH} if some libraries and tools are not on the default search path.
+    \item Not all tools need to be on the default path; some will be discovered automatically by \cmd{cmake}
+    \item No need to use a special Visual Studio shell when using \cmd{cmake}
+  \end{itemize}
+\end{frame}
 
 \section*{Acknowledgements}
 
