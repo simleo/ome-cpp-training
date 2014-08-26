@@ -5,7 +5,7 @@
 
 \include{common}
 
-\title{C++ Build Environment Setup for Bio-Formats and OMERO}
+\title{C++ Build Environment Setup for Building Bio-Formats and OmeroCpp}
 \author{Roger Leigh}
 \date{August 2014\\University of Dundee}
 
@@ -20,7 +20,7 @@
   \end{center}
 \end{frame}
 
-\section*{Overview}
+\section[]{Overview}
 \frame{
 \frametitle{Overview}
 \tableofcontents
@@ -316,13 +316,61 @@ Build and install the following by hand (for Bio-Formats):
   \item SCons
   \item Jam
   \item qmake
-  \item ant / maven / gradle
+  \item Ant / Maven / Gradle
   \end{itemize}
 \end{frame}
 
+\subsection{cmake}
 
+\begin{frame}
+  \frametitle{\cmd{cmake} overview}
+  \medskip
+  \centering
+  \includegraphics[width=0.65\textwidth]{cmake-flow}
+\end{frame}
 
-\section*{Acknowledgements}
+\begin{frame}
+  \frametitle{\cmd{cmake} features}
+
+  \begin{itemize}
+  \item \cmd{cmake} is a generic cross-platform build system
+  \item \cmd{cmake} generates build files for a large number of common
+    build systems
+  \item On FreeBSD, Linux and MacOS X, \cmd{make} \texttt{Makefile}s will be used
+  \item On Windows with Visual Studio, \cmd{msbuild} \texttt{.sln}
+    solution files will be used
+  \item Eclipse, Sublime Text, Kate, Code::Blocks or several other
+    IDEs or build systems may be used instead, if desired
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Using \cmd{cmake} (live demo)}
+  \scriptsize
+  \begin{block}{Basic cmake usage}
+    \begin{itemize}
+      \item Basic options
+      \item Available generators
+    \end{itemize}
+  \end{block}
+  \begin{block}{Building Bio-Formats on MacOS X}
+    \begin{itemize}
+      \item Running cmake
+      \item Building
+      \item Testing
+      \item Installing
+    \end{itemize}
+  \end{block}
+  \begin{block}{Building OmeroCpp on Windows}
+    \begin{itemize}
+      \item Running cmake
+      \item Building
+      \item Installing
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\section[]{Acknowledgements}
 
 \frame{
   \frametitle{Acknowledgements}

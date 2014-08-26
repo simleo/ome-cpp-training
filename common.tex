@@ -1,0 +1,30 @@
+\usepackage{beamerthemesplit}
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}[page number]{}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{setspace}
+\usepackage{url}
+
+\usepackage{fontspec}
+\setmonofont{Latin Modern Mono}
+\setsansfont{TeX Gyre Heros}
+
+\lstset{breakatwhitespace=true,
+language=C++,
+basicstyle=\footnotesize\ttfamily,
+keywordstyle=\color{blue}\ttfamily,
+stringstyle=\color{red}\ttfamily,
+commentstyle=\color{brown}\ttfamily,
+morecomment=[l][\color{magenta}]{\#}keepspaces=true,
+breaklines=true,
+tabsize=3,
+showstringspaces=false,
+extendedchars=true,
+frame=single}
+
+\newcommand*{\vcenteredhbox}[1]{\begingroup
+\setbox0=\hbox{#1}\parbox{\wd0}{\box0}\endgroup}
