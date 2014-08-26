@@ -1,5 +1,8 @@
 \documentclass{beamer}
 
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+
 \include{common}
 
 \title{C++ Build Environment Setup for Bio-Formats and OMERO}
@@ -25,6 +28,8 @@
 
 \section{Installation of prerequisites}
 \subsection{Compiler and toolchain}
+\begin{frame}
+  \frametitle{Default compilers}
   \begin{itemize}
   \item FreeBSD: LLVM/clang++ or GCC
   \item Linux: GNU CC and GNU Binutils
@@ -36,12 +41,15 @@
 \end{frame}
 
 \subsection{Package installation}
+\begin{frame}
+  \frametitle{Package managers}
   \begin{itemize}
-  \item FreeBSD: Ports (pkg)
-  \item Linux: Distribution package manager (e.g. apt-get or yum)
-  \item MacOS X: homebrew (brew)
-  \item Windows: Yeah, right.  Compile it all by hand for your specific
-    version of Visual Studio!  (Microsoft love to make development for
+  \item FreeBSD: Ports (e.g. \cmd{pkg}, \cmd{portmaster})
+  \item Linux: Distribution package manager (e.g. \cmd{apt-get} or \cmd{yum})
+  \item MacOS X: homebrew (\cmd{brew})
+  \item Windows: Yeah, right.  You need to manually download all the
+    tools and then compile all the libraries by hand for your specific
+    version of Visual Studio.  (Microsoft love to make development for
     their platform easy and painless.  Not!)
   \end{itemize}
 
@@ -51,132 +59,216 @@
   might not need them all but it doesn't hurt to have them all.
 \end{frame}
 
-\subsection{FreeBSD}
+\begin{frame}
+  \frametitle{FreeBSD packages}
+  \scriptsize
+  Run \cmd{pkg install} to install:
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{devel/apache-ant}
+      \item[] \pkg{devel/boost-all}
+      \item[] \pkg{devel/cmake}
+      \item[] \pkg{devel/doxygen}
+      \item[] \pkg{devel/git}
+      \item[] \pkg{devel/googletest}
+      \item[] \pkg{devel/ice}
+      \item[] \pkg{graphics/graphviz}
+      \item[] \pkg{graphics/tiff}
+      \end{itemize}
+      \end{column}
+    \begin{column}{.5\linewidth}
+    \begin{itemize}
+      \item[] \pkg{java/openjdk7}
+      \item[] \pkg{java/junit}
+      \item[] \pkg{lang/python}
+      \item[] \pkg{lang/python27}
+      \item[] \pkg{print/texlive-full}
+      \item[] \pkg{science/hdf5}
+      \item[] \pkg{textproc/py-genshi}
+      \item[] \pkg{textproc/py-sphinx}
+      \item[] \pkg{textproc/xerces-c3}
+    \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
 
-Run ``pkg install'' to install:
+\begin{frame}
+  \frametitle{Debian and Ubuntu packages}
+  \scriptsize
+  Run \cmd{apt-get install} to install:
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{ant ant-contrib ant-optional}
+      \item[] \pkg{build-essential}
+      \item[] \pkg{cmake}
+      \item[] \pkg{doxygen}
+      \item[] \pkg{git}
+      \item[] \pkg{graphviz}
+      \item[] \pkg{junit4}
+      \item[] \pkg{libboost-all-dev}
+      \item[] \pkg{libgtest-dev}
+      \item[] \pkg{libtiff5-dev}
+      \item[] \pkg{libxerces-c-dev}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{libzeroc-ice35-dev ice35-services ice35-slice ice35-translators icebox python-zeroc-ice}
+      \item[] \pkg{openjdk-7-jdk openjdk-7-jre}
+      \item[] \pkg{python python2.7}
+      \item[] \pkg{texlive-full}
+      \item[] \pkg{libhdf5-dev}
+      \item[] \pkg{python-genshi} (or use \cmd{pip})
+      \item[] \pkg{python-sphinx} (or use \cmd{pip})
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
 
-devel/apache-ant
-devel/boost-all
-devel/cmake
-devel/doxygen
-devel/git
-devel/googletest
-devel/ice
-graphics/graphviz
-graphics/tiff
-java/openjdk7
-java/junit
-lang/python
-lang/python27
-print/texlive-full
-science/hdf5
-textproc/py-genshi
-textproc/py-sphinx
-textproc/xerces-c3
-
-\subsection{Linux (Debian and Ubuntu)}
-
-Run ``apt-get install'' to install:
-
-ant ant-contrib ant-optional
-libboost-all-dev
-cmake
-doxygen
-git
-libgtest-dev
-libzeroc-ice35-dev ice35-services ice35-slice ice35-translators icebox python-zeroc-ice
-graphviz
-libtiff5-dev
-openjdk-7-jdk openjdk-7-jre
-junit4
-python python2.7
-texlive-full
-libhdf5-dev
-python-genshi
-python-sphinx
-libxerces-c-dev
-
-\subsection{Linux (CentOS and RHEL)}
-
-Run ``apt-get install'' to install:
-
-boost-devel
-cmake
-doxygen
-git
-gtest-devel
-graphviz
-libtiff-devel
-java-1.7.0-openjdk
-junit4
-python
-texlive-full
-hdf5-devel
-python-genshi
-xerces-c-devel
-
+\begin{frame}
+  \frametitle{CentOS and RHEL packages}
+  \scriptsize
+  Run \cmd{yum install} to install:
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{boost-devel}
+      \item[] \pkg{cmake}
+      \item[] \pkg{doxygen}
+      \item[] \pkg{git}
+      \item[] \pkg{graphviz}
+      \item[] \pkg{gtest-devel}
+      \item[] \pkg{hdf5-devel}
+      \item[] \pkg{java-1.7.0-openjdk}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{junit4}
+      \item[] \pkg{libtiff-devel}
+      \item[] \pkg{python-genshi} (or use \cmd{pip})
+      \item[] \pkg{python}
+      \item[] \pkg{texlive-full}
+      \item[] \pkg{xerces-c-devel}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\bigskip
 Install the following by hand:
 
-ant
-junit
-ice (RPMs available)
-texlive (via install-tl)
-sphinx (via pip)
+Ant, JUnit, Ice (RPMs available),
+\TeX{}Live (via \cmd{install-tl}),
+\pkg{sphinx} (via \cmd{pip})
+\end{frame}
 
-\subsection{MacOS X (with homebrew)}
-
-Run ``brew install'' to install:
-
-ant
-boost
-cmake
-doxygen
-git
-graphviz
-hdf5
-ice
-libtiff-devel
-python
-xerces-c
-
+\begin{frame}
+  \frametitle{MacOS X homebrew packages}
+Run \cmd{brew install} to install:
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{ant}
+      \item[] \pkg{boost}
+      \item[] \pkg{cmake}
+      \item[] \pkg{doxygen}
+      \item[] \pkg{git}
+      \item[] \pkg{graphviz}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{hdf5}
+      \item[] \pkg{ice}
+      \item[] \pkg{libtiff}
+      \item[] \pkg{python}
+      \item[] \pkg{xerces-c}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\bigskip
 Install the following by hand:
+\begin{itemize}
+\item Google Test (\pkg{gtest}) from zip or subversion
+\item Java (JDK 1.7 from Oracle)
+\item \TeX{}Live (via \cmd{install-tl} or Mac\TeX{})
+\item \pkg{sphinx} (via \cmd{pip})
+\end{itemize}
+\end{frame}
 
-gtest (from zip or svn)
-java (JDK 1.7 from Oracle)
-texlive (via install-tl or MacTeX)
-sphinx (via pip)
+\begin{frame}
+  \frametitle{Windows installation (packages)}
+  Install the following by hand:
+\begin{itemize}
+\item Ant
+\item CMake
+\item Doxygen and Graphviz
+\item Git (msysgit)
+\item Ice (latest ZeroC installer or our 3.5.1 build)
+\item Java (latest JDK 1.7 from Oracle)
+\item \LaTeX{} (Mik\TeX{})
+\item Python (latest 2.7 from python.org; 64-bit recommended)
+\item \pkg{genshi}
+\item \pkg{sphinx}
+\item Visual Studio (2010, 2012 or 2013; Full or Express edition)
+\end{itemize}
+\end{frame}
 
-\subsection{Windows (entirely by hand)}
+\begin{frame}
+  \frametitle{Windows installation (libraries)}
 
-Install the following by hand:
+For python, either download separate installers for each packages, or
+install \pkg{setuptools} and \pkg{pip} for Python, then \cmd{pip
+  install} needed packages; ensure any downloaded packages are 64-bit
+if using 64-bit python)
+\bigskip
 
-Visual Studio
-ant
-cmake
-git (msysgit)
-ice (latest ZeroC installer or our 3.5.1 build)
-python (latest 2.7 from python.org; note must be 64-bit for 64-bit
-builds)
-java (latest JDK 1.7 from Oracle)
-genshi and sphinx (install setuptools and pip for python, then pip install them)
+Download and build \pkg{gtest} using \cmd{cmake} (no installation
+required)
+\bigskip
 
-graphviz and doxygen if required
-MikTeX if required
+Build and install the following by hand (for Bio-Formats):
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{boost}
+      \item[] \pkg{hdf5}
+      \item[] \pkg{icu}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{itemize}
+      \item[] \pkg{tiff}
+      \item[] \pkg{xerces}
+      \item[] \pkg{zlib}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+...and possibly more--we haven't yet done a Bio-Formats C++ build on Windows.
+\end{frame}
 
-Build gtest (no installation required)
+\subsection{Obtaining packages}
 
-Then build and install the following by hand:
+\begin{frame}
+  \frametitle{Obtaining packages by hand}
+  \scriptsize
+  \begin{itemize}
+  \item Google Test \dotfill \href{https://code.google.com/p/googletest/}{(website)} \href{https://code.google.com/p/googletest/downloads/detail?name=gtest-1.7.0.zip}{(download zip)} \href{http://googletest.googlecode.com/svn/tags/release-1.7.0}{(svn tag)}
+  \item CMake \dotfill \href{http://cmake.org/}{(website)} \href{http://cmake.org/cmake/resources/software.html}{(download)}
+  \item Java \dotfill \href{http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html}{(JDK7 download)}
+  \item Visual Studio \dotfill \href{https://my.dundee.ac.uk/webapps/blackboard/content/listContent.jsp?course\_id=\_28436\_1\&content_id=\_3952234\_1}{(Dundee staff)} \href{http://www.visualstudio.com/downloads/download-visual-studio-vs\#d-express-windows-desktop}{(Express download)}
+  \item Ant \dotfill \href{http://ant.apache.org/}{(website)} \href{http://ant.apache.org/bindownload.cgi}{(download)}
+  \item Git \dotfill \href{http://www.git-scm.com/}{(website)} \href{http://www.git-scm.com/downloads}{(download)}
+  \item Ice \dotfill \href{http://zeroc.com/}{(website)} \href{http://zeroc.com/download.html\#win32\_msi}{(download)}
+  \item Python \dotfill \href{https://www.python.org/}{(website)} \href{https://www.python.org/download/releases/2.7.8/}{(download)} \href{http://www.lfd.uci.edu/\~gohlke/pythonlibs/}{(extra packages)}
+  \item \LaTeX{} \dotfill \href{https://www.tug.org/texlive/}{(\TeX{}Live)} \href{https://www.tug.org/texlive/quickinstall.html}{(\TeX{}Live install)} \href{http://www.miktex.org/}{(Mik\TeX{} website)} \href{http://www.miktex.org/download}{(Mik\TeX{} download)}
+  \item Doxygen \dotfill \href{http://www.stack.nl/\~dimitri/doxygen/}{(website)} \href{http://www.stack.nl/\~dimitri/doxygen/download.html}{(download)}
+  \item Graphviz \dotfill \href{http://graphviz.org/}{(website)} \href{http://graphviz.org/Download\_windows.php}{(download)}
+  \end{itemize}
+\end{frame}
 
-For Bio-Formats only:
-
-zlib
-icu
-boost
-xerces
-tiff
-hdf5
-
-And possibly more--we haven't yet done a Bio-Formats C++ build on Windows.
+\section{Configuration}
 
 \section*{Acknowledgements}
 
