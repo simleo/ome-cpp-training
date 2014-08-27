@@ -2,6 +2,8 @@
 
 \newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
 \newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
 
 \include{common}
 
@@ -130,6 +132,9 @@
 \begin{frame}
   \frametitle{CentOS and RHEL packages}
   \scriptsize
+  Run \cmd{yum groupinstall "Development Tools"}
+  \bigskip
+
   Run \cmd{yum install} to install:
   \begin{columns}
     \begin{column}{.5\linewidth}
@@ -165,7 +170,11 @@ Ant, JUnit, Ice (RPMs available),
 
 \begin{frame}
   \frametitle{MacOS X homebrew packages}
-Run \cmd{brew install} to install:
+  \scriptsize
+  Install XCode and its command line tools
+  \bigskip
+
+  Run \cmd{brew install} to install:
   \begin{columns}
     \begin{column}{.5\linewidth}
       \begin{itemize}
@@ -381,6 +390,214 @@ Build and install the following by hand (for Bio-Formats):
     \end{itemize}
   \end{block}
 \end{frame}
+
+\section{Examples}
+\subsection{gtest}
+
+\begin{frame}[fragile]
+  \frametitle{Building \pkg{gtest} on U\textsc{nix}}
+  Build from downloaded zip:
+
+  \begin{semiverbatim}
+% cd /tmp
+% unzip ~/Downloads/gtest-1.7.0.zip
+% cd gtest-1.7.0
+% cmake .
+% make
+\end{semiverbatim}
+
+This is used with other builds by setting the \env{GTEST\_ROOT}
+environment variable or the \opt{GTEST\_ROOT} \cmd{cmake} cache
+variable.
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building \pkg{gtest} on Debian or Ubuntu}
+  Build using installed sources and headers from the \pkg{libgtest-dev} package:
+
+  \begin{semiverbatim}
+% cd /tmp
+% mkdir gtest
+% cd gtest
+% cmake /usr/src/gtest
+% make
+\end{semiverbatim}
+
+This is used with other builds by setting the \env{GTEST\_ROOT}
+environment variable or the \opt{GTEST\_ROOT} \cmd{cmake} cache
+variable.
+\end{frame}
+
+\subsection{Bio-Formats}
+
+\begin{frame}[fragile]
+  \frametitle{Building Bio-Formats on U\textsc{nix} (1)}
+  \scriptsize
+  Building from git or release zip:
+
+  Configure the build:
+
+  \begin{semiverbatim}
+% mkdir /tmp/bfbuild
+% cd /tmp/bfbuild
+% cmake -DGTEST_ROOT=/tmp/gtest /path/to/bioformats
+\end{semiverbatim}
+
+  Show cache variables and advanced cache variables which may be used to customise the build:
+
+  \begin{semiverbatim}
+% cmake -LH
+% cmake -LAH
+\end{semiverbatim}
+
+Run the build with either of:
+
+  \begin{semiverbatim}
+% make [VERBOSE=1]
+% cmake --build .
+\end{semiverbatim}
+
+Build the API reference documentation with either of:
+
+  \begin{semiverbatim}
+% make doc
+% cmake --build . --target doc
+\end{semiverbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building Bio-Formats on U\textsc{nix} (2)}
+  \scriptsize
+
+Run the unit tests with any of:
+
+  \begin{semiverbatim}
+% make test
+% cmake --build . --target test
+% ctest [-V]
+\end{semiverbatim}
+
+Individual tests may be run by hand:
+
+  \begin{semiverbatim}
+% cpp/test/ome-bioformats/pixelbuffer
+% cpp/test/ome-bioformats/pixelbuffer --gtest_help
+\end{semiverbatim}
+
+Use \opt{--gtest\_help} to list test options.  Useful when debugging
+to run specific tests or subsets of the tests.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building Bio-Formats on U\textsc{nix} (3)}
+  \scriptsize
+
+Install the build with either of:
+
+  \begin{semiverbatim}
+% make install [VERBOSE=1] [DESTDIR=/staging/path]
+% cmake --build . --target install
+\end{semiverbatim}
+
+By default, this will install into \opt{CMAKE\_INSTALL\_PREFIX} which
+will default to \path{/usr/local}.  Use \opt{DESTDIR} to install into
+an alternative prefixed location, which is useful for testing and
+packaging for release.
+\end{frame}
+
+\subsection{OmeroCpp}
+
+\begin{frame}[fragile]
+  \frametitle{Building OmeroCpp on U\textsc{nix} (1)}
+  \scriptsize
+  Building from git or release zip:
+
+  Configure the build. optionally showing Ice autodetection diagnostics:
+
+  \begin{semiverbatim}
+% mkdir /tmp/ocppbuild
+% cd /tmp/ocppbuild
+% cmake -DGTEST_ROOT=/tmp/gtest [-DIce_HOME=/path/to/ice] \\
+  [-DIce_DEBUG=ON] /path/to/openmicroscopy
+\end{semiverbatim}
+
+  Show cache variables and advanced cache variables which may be used to customise the build:
+
+  \begin{semiverbatim}
+% cmake -LH
+% cmake -LAH
+\end{semiverbatim}
+
+Run the build with either of:
+
+  \begin{semiverbatim}
+% make [VERBOSE=1]
+% cmake --build .
+\end{semiverbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building OmeroCpp on U\textsc{nix} (2)}
+  \scriptsize
+Alternatively, it is possible to build in the openmicroscopy tree
+directly:
+
+  \begin{semiverbatim}
+% ./build.py
+% ./build.py build-cpp -Dcmake.opts="cmake options"
+\end{semiverbatim}
+
+However, passing in cmake options and using different generators is
+much more difficult and more fragile with this method.
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Building OmeroCpp on U\textsc{nix} (3)}
+  \scriptsize
+
+Run the unit tests with any of:
+
+  \begin{semiverbatim}
+% make test
+% cmake --build . --target test
+% ctest [-V]
+\end{semiverbatim}
+
+Note that \env{ICE\_CONFIG} needs setting with the details of a
+running OMERO server which the unit and integration tests can connect
+to for testing against.
+\bigskip
+
+Individual tests may be run by hand:
+
+  \begin{semiverbatim}
+% components/tools/OmeroCpp/test/unit/unit
+% components/tools/OmeroCpp/test/unit/unit --gtest_help
+\end{semiverbatim}
+
+Use \opt{--gtest\_help} to list test options.  Useful when debugging
+to run specific tests or subsets of the tests.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building OmeroCpp on U\textsc{nix} (4)}
+  \scriptsize
+
+Install the build with either of:
+
+  \begin{semiverbatim}
+% make install [VERBOSE=1] [DESTDIR=/staging/path]
+% cmake --build . --target install
+\end{semiverbatim}
+
+By default, this will install into \opt{CMAKE\_INSTALL\_PREFIX} which
+will default to \path{/usr/local}.  Use \opt{DESTDIR} to install into
+an alternative prefixed location, which is useful for testing and
+packaging for release.
+\end{frame}
+
 
 \section[]{Acknowledgements}
 
