@@ -9,7 +9,7 @@
 
 \title{C++ Build Environment Setup for Building Bio-Formats and OmeroCpp}
 \author{Roger Leigh}
-\date{August 2014\\University of Dundee}
+\date{Wednesday 3\textsuperscript{rd} September 2014\\University of Dundee}
 
 \begin{document}
 
@@ -392,7 +392,7 @@ Build and install the following by hand (for Bio-Formats):
 \end{frame}
 
 \section{Examples}
-\subsection{gtest}
+\subsection{gtest on Unix}
 
 \begin{frame}[fragile]
   \frametitle{Building \pkg{gtest} on U\textsc{nix}}
@@ -598,7 +598,7 @@ an alternative prefixed location, which is useful for testing and
 packaging for release.
 \end{frame}
 
-\subsection{cmake and OmeroCpp on Windows}
+\subsection{gtest and OmeroCpp on Windows}
 
 \begin{frame}[fragile]
   \frametitle{Windows environment}
@@ -607,7 +607,7 @@ packaging for release.
 
   \begin{semiverbatim}
 set "ICE_HOME=C:\\Program Files (x86)\\ZeroC\\Ice-3.5.1"
-set "PATH=%ICE_HOME%\bin\vc110\x64;C:\Program Files (x86)\CMake\bin;%PATH%"
+set "PATH=\%ICE_HOME\%\\bin\\vc110\\x64;C:\\Program Files (x86)\\CMake\\bin;%PATH%"
 c:\\venv\\27\\scripts\\activate
 \end{semiverbatim}
 
@@ -635,12 +635,12 @@ it is optional for direct use of \cmd{cmake}.
 
   \begin{semiverbatim}
 > set CL=/D_VARIADIC_MAX=10
-> cd c:\Users\rleigh\gtest-1.7.0
+> cd c:\\Users\\rleigh\\gtest-1.7.0
 > cmake -G "Visual Studio 11 2012 Win64" .
 > cmake --build .
 \end{semiverbatim}
 
-The \textttt{\_VARIADIC\_MAX=10} define works around a lack of
+The \texttt{\_VARIADIC\_MAX=10} define works around a lack of
 variadic templates in this version of Visual Studio; may affect other
 Visual Studio versions.  Leave set for the remaining steps.
 \end{frame}
@@ -649,14 +649,22 @@ Visual Studio versions.  Leave set for the remaining steps.
   \frametitle{Building OmeroCpp on Windows (1)}
   \scriptsize
 
+  Note: OmeroCpp building on Windows is a work in progress and not get
+  completely finished.
+
+  \bigskip
   Note: starting from a \emph{clean} and up-to-date \emph{develop}
   branch of \pkg{openmicroscopy.git} located in
   \path{c:\Users\rleigh\openmicroscopy}.
 
   \begin{semiverbatim}
-> mkdir c:\Users\rleigh\ocppbuild
-> cd c:\Users\rleigh\ocppbuild
-> cmake -G "Visual Studio 11 2012 Win64" -DGTEST_ROOT=..\gtest-1.7.0 -DGTEST_LIBRARY=C:\Users\rleigh\gtest-1.7.0\Debug\gtest.lib -DGTEST_MAIN_LIBRARY=C:\Users\rleigh\gtest-1.7.0\Debug\gtest_main.lib ..\openmicroscopy
+> mkdir c:\\Users\\rleigh\\ocppbuild
+> cd c:\\Users\\rleigh\\ocppbuild
+> cmake -G "Visual Studio 11 2012 Win64" \\
+  -DGTEST_ROOT=C:\\Users\\rleigh\\gtest-1.7.0 \\
+  -DGTEST_LIBRARY=C:\\Users\\rleigh\\gtest-1.7.0\\Debug\\gtest.lib \\
+  -DGTEST_MAIN_LIBRARY=C:\\Users\\rleigh\\gtest-1.7.0\\Debug\\gtest_main.lib \\
+  ..\\openmicroscopy
 > cmake --build .
 \end{semiverbatim}
 
@@ -664,6 +672,7 @@ After running \cmd{cmake}, it's also possible to open the solution
 file in Visual Studio and build from inside the application.
 \end{frame}
 
+\appendix
 \section[]{Acknowledgements}
 
 \frame{
