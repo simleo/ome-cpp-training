@@ -429,7 +429,7 @@ environment variable or the \opt{GTEST\_ROOT} \cmd{cmake} cache
 variable.
 \end{frame}
 
-\subsection{Bio-Formats}
+\subsection{Bio-Formats on Unix}
 
 \begin{frame}[fragile]
   \frametitle{Building Bio-Formats on U\textsc{nix} (1)}
@@ -506,7 +506,7 @@ an alternative prefixed location, which is useful for testing and
 packaging for release.
 \end{frame}
 
-\subsection{OmeroCpp}
+\subsection{OmeroCpp on Unix}
 
 \begin{frame}[fragile]
   \frametitle{Building OmeroCpp on U\textsc{nix} (1)}
@@ -598,6 +598,71 @@ an alternative prefixed location, which is useful for testing and
 packaging for release.
 \end{frame}
 
+\subsection{cmake and OmeroCpp on Windows}
+
+\begin{frame}[fragile]
+  \frametitle{Windows environment}
+  \scriptsize
+  I set up the environment with a custom batch file:
+
+  \begin{semiverbatim}
+set "ICE_HOME=C:\\Program Files (x86)\\ZeroC\\Ice-3.5.1"
+set "PATH=%ICE_HOME%\bin\vc110\x64;C:\Program Files (x86)\CMake\bin;%PATH%"
+c:\\venv\\27\\scripts\\activate
+\end{semiverbatim}
+
+I also have Ant, Git, Java (JDK), and LaTeX on the default \env{PATH}.
+However, these could also be included in the custom batch file.
+
+I use
+\href{https://github.com/cbucher/console/wiki/Downloads}{ConsoleZ}
+with custom tabs which source different batch files to create
+different environments.  For the above, I use the following command to
+set up a custom OMERO tab:
+
+  \begin{semiverbatim}
+C:\\Windows\\System32\\cmd /k C:\\Users\\rleigh\\bin\\omeroenv.bat
+\end{semiverbatim}
+
+Note that the Ice setup is only required for running \cmd{build.py};
+it is optional for direct use of \cmd{cmake}.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building \pkg{gtest} on Windows}
+  \scriptsize
+  Download and unpack \pkg{gtest}, then run:
+
+  \begin{semiverbatim}
+> set CL=/D_VARIADIC_MAX=10
+> cd c:\Users\rleigh\gtest-1.7.0
+> cmake -G "Visual Studio 11 2012 Win64" .
+> cmake --build .
+\end{semiverbatim}
+
+The \textttt{\_VARIADIC\_MAX=10} define works around a lack of
+variadic templates in this version of Visual Studio; may affect other
+Visual Studio versions.  Leave set for the remaining steps.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Building OmeroCpp on Windows (1)}
+  \scriptsize
+
+  Note: starting from a \emph{clean} and up-to-date \emph{develop}
+  branch of \pkg{openmicroscopy.git} located in
+  \path{c:\Users\rleigh\openmicroscopy}.
+
+  \begin{semiverbatim}
+> mkdir c:\Users\rleigh\ocppbuild
+> cd c:\Users\rleigh\ocppbuild
+> cmake -G "Visual Studio 11 2012 Win64" -DGTEST_ROOT=..\gtest-1.7.0 -DGTEST_LIBRARY=C:\Users\rleigh\gtest-1.7.0\Debug\gtest.lib -DGTEST_MAIN_LIBRARY=C:\Users\rleigh\gtest-1.7.0\Debug\gtest_main.lib ..\openmicroscopy
+> cmake --build .
+\end{semiverbatim}
+
+After running \cmd{cmake}, it's also possible to open the solution
+file in Visual Studio and build from inside the application.
+\end{frame}
 
 \section[]{Acknowledgements}
 
