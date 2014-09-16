@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \include{common}
 
@@ -29,49 +29,80 @@
 
 \begin{frame}[fragile]
   \frametitle{Java types}
-  \begin{lstlisting}[language=Java]
-int i;
-double d;
 
+  \begin{block}{Primitive types}
+    \begin{lstlisting}[language=Java]
+int i;     double d;
+\end{lstlisting}
+    \begin{itemize}
+      \pause
+    \item No unsigned integer types
+    \end{itemize}
+  \end{block}
+  \pause
+  \begin{block}{Classes}
+    \begin{lstlisting}[language=Java]
 Pixels pixels = new Pixels();
+\end{lstlisting}
+    \begin{itemize}
+      \pause
+    \item Classes, all derived from root \texttt{Object}
+      \pause
+    \item Objects are by reference only
+      \pause
+    \item Objects and arrays are always allocated with \texttt{new}
+      \pause
+    \item Destruction is non-deterministic
+    \end{itemize}
+  \end{block}
+\end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Java types}
+  \begin{block}{Arrays}
+    \begin{lstlisting}[language=Java]
 Pixels[] array = new Pixels[5];
 \end{lstlisting}
-  \begin{itemize}
-    \pause
-  \item Primitive types
-    \pause
-  \item No unsigned integer types
-    \pause
-  \item Classes, all derived from root \texttt{Object}
-    \pause
-  \item Objects are by reference only
-    \pause
-  \item Objects and arrays are always allocated with \texttt{new}
-    \pause
-  \item Destruction is non-deterministic
-  \end{itemize}
+    \begin{itemize}
+      \pause
+    \item Arrays have intrinsic size
+      \pause
+    \item Arrays are safe to index out of bounds (throws exception)
+    \end{itemize}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{C++ types}
-  \begin{lstlisting}
+  \begin{block}{Primitive types}
+    \begin{lstlisting}
 uint32_t i;
 double d;
+\end{lstlisting}
+    \begin{itemize}
+      \pause
+    \item Includes unsigned integer types
+      \pause
+    \item Integer types of defined sizes
+    \end{itemize}
+  \end{block}
+\end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{C++ types}
+  \begin{block}{Classes}
+  \begin{lstlisting}
 Pixels         pixels;
-Pixels        *pixelsptr1 = new Pixels();
+§\pause§
+Pixels        *pixelsptr1 = new Pixels();§\pause§
 const Pixels  *pixelsptr2 = &pixels;
+§\pause§
 Pixels&        pixelsref(pixels);
-
-Pixels array[5];
 \end{lstlisting}
   \begin{itemize}
-    \uncover<1->
-  \item Primitive types, including unsigned, of standard sizes
-    \uncover<1->
+    \pause
   \item Classes have no common root
-    \uncover<1->
+    \pause
   \item All types may be instances, pointers or references
     \pause
   \item Pointers and references may refer to \texttt{const} type
@@ -80,48 +111,144 @@ Pixels array[5];
     \pause
   \item Destruction is deterministic
   \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ types}
+  \begin{block}{Arrays}
+  \begin{lstlisting}
+Pixels array[5];
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Arrays “decay” to bare pointers
+    \pause
+  \item Arrays are not safe to index out of bounds
+    \pause
+  \item Size information lost at runtime
+  \end{itemize}
+  \end{block}
 \end{frame}
 
 \subsection{Reference handling}
 
 \begin{frame}[fragile]
   \frametitle{C++ pointers: pitfalls of “dumb” pointers}
+\begin{block}{Manual memory allocation}
   \begin{lstlisting}
 {
   Image *i = new Image(filename);
 
-  i->read_plane(); // throws exception
+  i->read_plane();
 
-  // Memory leaked here
   // Memory not freed when pointer i goes out of scope
 }
 \end{lstlisting}
   \begin{itemize}
-    \item \texttt{new} and \texttt{delete} must always be paired
-    \item Requires manual management of ownership and lifetime
-    \item Bare pointers are not exception-safe
-    \item Need to clean up for every exit point in a function
+    \pause
+  \item \texttt{new} and \texttt{delete} must always be paired
   \end{itemize}
+\end{block}
+\vbox to 0.4\textheight{%
+}%
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ pointers: pitfalls of “dumb” pointers}
+\begin{block}{Manual memory allocation and deallocation}
+  \begin{lstlisting}
+{
+  Image *i = new Image(filename);
+
+  i->read_plane();
+
+  delete i;
+}
+\end{lstlisting}
+  \begin{itemize}
+  \item \texttt{new} and \texttt{delete} must always be paired
+  \item Requires manual management of ownership and lifetime
+    \pause
+  \item This isn't sufficient
+  \end{itemize}
+\end{block}
+\vbox to 0.4\textheight{%
+}%
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Manual memory allocation and deallocation}
+  \frametitle{C++ pointers: pitfalls of “dumb” pointers}
+  \begin{lstlisting}
+{
+  Image *i = new Image(filename);
+
+  i->read_plane(); // throws exception; memory leaked
+
+  delete i; // never called
+}
+\end{lstlisting}
+  \begin{itemize}
+  \item \texttt{new} and \texttt{delete} must always be paired
+  \item Requires manual management of ownership and lifetime
+  \item Bare pointers are not exception-safe
+    \pause
+  \item Need to clean up for every exit point in a function
+  \end{itemize}
+\end{block}
+\vbox to 0.4\textheight{%
+}%
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ pointers: pitfalls of “dumb” pointers}
+  \begin{block}{One correct solution}
+  \begin{lstlisting}
+
+{
+  Image *i = new Image(filename);
+
+  try {
+    i->read_plane(); // throws exception
+  } catch (const std::runtime_error& e) {
+    delete i; // clean up
+    throw; // rethrow
+  }
+
+  delete i; // never called for exceptions
+}
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Painful and error prone over an entire codebase
+  \end{itemize}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{C++ pointers: \texttt{std::shared\_ptr} as a “smart” pointer}
   \begin{lstlisting}
 { // Image *i = new Image(filename);
-  std::shared_ptr<Image> i(std::make_shared<Image>(filename));
-
+  std::shared_ptr<Image> i
+    (std::make_shared<Image>(filename));
+§\pause§
   i->read_plane(); // throws exception
-
-  // Memory freed when i's destructor is
-  // run at exit of block scope
+§\pause§
+  // Memory freed when i's destructor is run
 }
-
 \end{lstlisting}
   \begin{itemize}
+    \item Memory is freed by the \texttt{shared\_ptr} destructor
+      \pause
     \item \texttt{shared\_ptr} object lifetime manages the resource
-    \item May be used as class members; lifetime is tied to class instance
+      \pause
+    \item May be used as class members; lifetime of class instance
+      \pause
     \item Clean up for all exit points is automatic and safe
+      \pause
     \item Allows ownership transfer and sharing
+      \pause
     \item Allows reference without ownership using \texttt{weak\_ptr}
   \end{itemize}
 \end{frame}
@@ -129,14 +256,21 @@ Pixels array[5];
 \begin{frame}[fragile]
   \frametitle{RAII: Resource Acquisition Is Initialisation}
     \begin{itemize}
+      \pause
     \item Class is a proxy for a resource
+      \pause
     \item Resource is acquired when object is intialised
     \item Resource is released when object is destroyed
+      \pause
     \item Manage any resource (memory, files, locks, mutexes)
+      \pause
     \item C++ language and runtime guarantees make resource management
       deterministic and reliable
+      \pause
     \item Safe for use in any scope
+      \pause
     \item Exception safe
+      \pause
     \item Used throughout modern C++ libraries and applications
     \end{itemize}
 \end{frame}
@@ -147,8 +281,8 @@ Pixels array[5];
 //          Non-constant                              Constant
 // -----------------------------       ---------------------------------------
 // Pointer
-                       Image *i;                               const Image *i;
-                Image * const i;                        const Image * const i;
+                       Image *i;§\pause§                               const Image *i;
+§\pause§                Image * const i;§\pause§                        const Image * const i;
 §\pause§
 // Reference
                        Image& i;                               const Image& i;
@@ -187,7 +321,8 @@ std::weak_ptr<Image> i;      // Weak reference
 \end{block}
 \begin{block}{Arguments}
   \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
-void read_plane(const Image& image);§\pause§
+void read_plane(const Image& image); // ownership retained§\pause§
+// ownership shared/transferred
 void read_plane(const std::shared_ptr<Image>& image);
 \end{lstlisting}
 \pause
@@ -223,13 +358,28 @@ std::shared_ptr<Image>& get_image(); // ownership shared
 
 \begin{frame}[fragile]
   \frametitle{Safe array passing: \texttt{std::array} / \texttt{boost::array}}
+  \begin{block}{C++ array problems}
   \begin{lstlisting}
 class Image
 {
   // Unsafe; size unknown
   uint8_t[] getLUT();
        void setLUT(uint8_t[]& lut);
+};
+\end{lstlisting}
+  \begin{itemize}
+  \item C++ arrays “decay” to “bare” pointers
+  \item Pointers have no associated size information
+  \end{itemize}
+  \end{block}
+\end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Safe array passing: \texttt{std::array} / \texttt{boost::array}}
+  \begin{block}{\texttt{std::array}}
+  \begin{lstlisting}
+class Image
+{
   // Safe; size defined
   typedef std::array<uint8_t, 256> LUT;
   const LUT& getLUT() const;
@@ -237,12 +387,13 @@ class Image
 };
 \end{lstlisting}
   \begin{itemize}
-  \item<1-> C (C++) arrays essentially decay to plain pointers
-  \item<2-> Plain pointers have no associated size information
-  \item<3-> \texttt{std::array} is an array-like object
-  \item<4-> \texttt{std::array} size defined in the template
-  \item<5-> \texttt{std::array} can be passed like any object
+  \item<1-> \texttt{std::array} is an array-like object
+  \item<2-> \texttt{std::array} size defined in the template
+  \item<3-> \texttt{std::array} can be passed like any object
+  \item<4-> Bounds checking with \texttt{.at()}
+  \item<4-> Unchecked access with \texttt{[]}
   \end{itemize}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -250,16 +401,19 @@ class Image
 \begin{block}{Types with a common base}
   \begin{lstlisting}
     std::vector<std::shared_ptr<Base> > v;
-    v.push_back(std::make_shared<Derived>());
+§\pause§    v.push_back(std::make_shared<Derived>());
 \end{lstlisting}
   \begin{itemize}
+    \pause
   \item Store any type derived from \texttt{Base}
   \end{itemize}
 \end{block}
+\pause
 \begin{block}{Java containers can be problematic}
   \begin{itemize}
   \item Java can store root \texttt{Object} in containers
   \item Java can pass and return root \texttt{Object} in methods.
+    \pause
   \item This isn't possible in C++: there is no root object.
   \item An alternative approach is needed.
   \end{itemize}
@@ -271,21 +425,24 @@ class Image
 \begin{block}{Types with no common base: \texttt{boost::variant}}
   \begin{lstlisting}
     typedef boost::variant<int, std::string> variants;
-    std::vector<variants> v;
-    v.push_back(43);
-    v.push_back("ATTO 647N")
+§\pause§    std::vector<variants> v;
+§\pause§    v.push_back(43);
+§\pause§    v.push_back("ATTO 647N")
 \end{lstlisting}
   \begin{itemize}
+    \pause
   \item Store a set of discriminated types
+    \pause
   \item Used to store original metadata
   \end{itemize}
 \end{block}
 \begin{block}{Arbitrary types: \texttt{boost::any}}
   \begin{lstlisting}
     std::vector<boost::any> v;
-    v.push_back(Anything);
+§\pause§    v.push_back(Anything);
 \end{lstlisting}
   \begin{itemize}
+    \pause
   \item Flexible, but need to cast to each type used to extract.
   \end{itemize}
 \end{block}
