@@ -1,0 +1,156 @@
+\section{Bio-Formats}
+\subsection{Building and installing}
+
+\begin{frame}[fragile]
+  \frametitle{Source layout}
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \begin{semiverbatim}\tiny
+cpp
+├── cmake
+├── lib
+│   └── ome
+│       ├── bioformats
+│       │   └── detail
+│       ├── compat
+│       ├── internal
+│       ├── xerces
+│       │   └── dom
+│       └── xml
+│           ├── meta
+│           └── model
+│               ├── enums
+│               └── primitives
+└── test
+    ├── ome-bioformats
+    ├── ome-compat
+    ├── ome-internal
+    ├── ome-xerces
+    └── ome-xml
+\end{semiverbatim}
+      \end{column}
+    \begin{column}{.5\linewidth}
+      \begin{block}{compat}
+        Compatibility workarounds
+      \end{block}
+      \begin{block}{internal}
+        Private implementation details
+      \end{block}
+      \begin{block}{xerces}
+        Xerces-C XML DOM wrappers
+      \end{block}
+      \begin{block}{xml}
+        OME XML model and metadata
+      \end{block}
+      \begin{block}{bioformats}
+        Bio-Formats reader and writer interfaces and implementations
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Configure}
+  \begin{semiverbatim}\footnotesize
+% mkdir /tmp/bioformats-build
+% cd /tmp/bioformats-build
+% cmake ~/code/bioformats
+\end{semiverbatim}
+\end{block}
+\begin{block}{Build}
+  \begin{semiverbatim}\footnotesize
+% make -j8
+\end{semiverbatim}
+\end{block}
+\begin{block}{Install}
+  \begin{semiverbatim}\footnotesize
+% make DESTDIR=/tmp/bioformats-install install
+\end{semiverbatim}
+\end{block}
+The build directory is separate from the source directory.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Installed directories}
+  \begin{semiverbatim}\tiny
+/tmp/bioformats-install
+└── usr
+    └── local
+        ├── include
+        │   └── ome
+        │       ├── bioformats
+        │       ├── compat
+        │       ├── xerces
+        │       │   └── dom
+        │       └── xml
+        │           ├── meta
+        │           └── model
+        │               ├── enums
+        │               └── primitives
+        └── lib
+            └── x86_64-linux-gnu
+                └── cmake
+\end{semiverbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Configuring and building with \texttt{cmake}}
+\begin{block}{Installed libraries}
+  \begin{semiverbatim}\scriptsize
+/tmp/bioformats-install/usr/local/lib
+└── x86_64-linux-gnu
+    ├── cmake
+    │   ├── ome-bioformats-config.cmake
+    │   ├── ome-xerces-config.cmake
+    │   └── ome-xml-config.cmake
+    ├── libome-bioformats.so -> libome-bioformats.so.5.1.0
+    ├── libome-bioformats.so.5.1.0
+    ├── libome-xerces.so -> libome-xerces.so.5.1.0
+    ├── libome-xerces.so.5.1.0
+    ├── libome-xml.so -> libome-xml.so.5.1.0
+    └── libome-xml.so.5.1.0
+\end{semiverbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{API Reference}
+\begin{block}{Doxygen}
+  \begin{itemize}
+  \item Doxygen is used to document all APIs
+    \item \url{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Completed functionality}
+  \begin{itemize}
+  \item \texttt{cmake} build infrastructure
+  \item Platform compatibility infrastructure
+  \item \texttt{gtest} test framework
+  \item Xerces-C wrapper classes
+  \item \texttt{xsd-fu} C++ type handling and template conversion
+  \item OME-XML model objects and metadata stores
+  \item Core Bio-Formats interfaces and supporting classes
+  \item Linux and MacOS jenkins build infrastructure
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{TODO}
+  \begin{itemize}
+  \item Bio-Formats TIFF reader and writer
+  \item Bio-Formats OME-TIFF reader and writer
+  \item Bio-Formats OME-XML reader and writer
+  \item \texttt{showinf} and \texttt{bfconvert} equivalents
+  \item Comprehensive test cases
+  \item Windows jenkins build infrastructure
+  \item (Potential) Refactoring of the Java and C++ model and metadata code, and
+    some of the \texttt{FormatReader} and \texttt{FormatWriter}
+    interfaces
+  \end{itemize}
+\end{frame}

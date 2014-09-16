@@ -1,37 +1,9 @@
 \documentclass{beamer}
 
-\usepackage{beamerthemesplit}
-\beamertemplatenavigationsymbolsempty
-\setbeamertemplate{footline}[page number]{}
-
-\usepackage{graphicx}
-\usepackage{color}
-\usepackage{listings}
-\usepackage{verbatim}
-\usepackage{setspace}
-\usepackage{url}
-
-\usepackage{fontspec}
-\setmonofont{Latin Modern Mono}
-\setsansfont{TeX Gyre Heros}
-
-\lstset{breakatwhitespace=true,
-language=C++,
-basicstyle=\footnotesize\ttfamily,
-keywordstyle=\color{blue}\ttfamily,
-stringstyle=\color{red}\ttfamily,
-commentstyle=\color{brown}\ttfamily,
-morecomment=[l][\color{magenta}]{\#}keepspaces=true,
-breaklines=true,
-tabsize=3,
-showstringspaces=false,
-extendedchars=true,
-frame=single}
-
-\newcommand*{\vcenteredhbox}[1]{\begingroup
-\setbox0=\hbox{#1}\parbox{\wd0}{\box0}\endgroup}
+\include{common}
 
 \title{Bio-Formats C++ Conversion}
+\subtitle{Differences between C++ and Java}
 \author{Roger Leigh}
 \date{March 2014\\University of Dundee}
 
@@ -52,7 +24,7 @@ frame=single}
 \tableofcontents
 }
 
-\section{C++ and Java incompatibility}
+\section{C++ and Java differences}
 \subsection{C++ and Java types}
 
 \begin{frame}[fragile]
@@ -66,11 +38,17 @@ Pixels pixels = new Pixels();
 Pixels[] array = new Pixels[5];
 \end{lstlisting}
   \begin{itemize}
+    \pause
   \item Primitive types
-  \item Classes, all derived from root \texttt{Object}
+    \pause
   \item No unsigned integer types
+    \pause
+  \item Classes, all derived from root \texttt{Object}
+    \pause
   \item Objects are by reference only
+    \pause
   \item Objects and arrays are always allocated with \texttt{new}
+    \pause
   \item Destruction is non-deterministic
   \end{itemize}
 \end{frame}
@@ -89,11 +67,17 @@ Pixels&        pixelsref(pixels);
 Pixels array[5];
 \end{lstlisting}
   \begin{itemize}
+    \uncover<1->
   \item Primitive types, including unsigned, of standard sizes
+    \uncover<1->
   \item Classes have no common root
+    \uncover<1->
   \item All types may be instances, pointers or references
+    \pause
   \item Pointers and references may refer to \texttt{const} type
+    \pause
   \item Pointers may be \texttt{const}
+    \pause
   \item Destruction is deterministic
   \end{itemize}
 \end{frame}
@@ -148,7 +132,7 @@ Pixels array[5];
     \item Class is a proxy for a resource
     \item Resource is acquired when object is intialised
     \item Resource is released when object is destroyed
-    \item Manage any resource (memory, files, locks)
+    \item Manage any resource (memory, files, locks, mutexes)
     \item C++ language and runtime guarantees make resource management
       deterministic and reliable
     \item Safe for use in any scope
@@ -165,26 +149,27 @@ Pixels array[5];
 // Pointer
                        Image *i;                               const Image *i;
                 Image * const i;                        const Image * const i;
-
+§\pause§
 // Reference
                        Image& i;                               const Image& i;
-
+§\pause§
 // Shared pointer
        std::shared_ptr<Image> i;               std::shared_ptr<const Image> i;
  const std::shared_ptr<Image> i;         const std::shared_ptr<const Image> i;
-
+§\pause§
 // Shared pointer reference
       std::shared_ptr<Image>& i;              std::shared_ptr<const Image>& i;
 const std::shared_ptr<Image>& i;        const std::shared_ptr<const Image>& i;
-
+§\pause§
 // Weak pointer
          std::weak_ptr<Image> i;                 std::weak_ptr<const Image> i;
    const std::weak_ptr<Image> i;           const std::weak_ptr<const Image> i;
-
+§\pause§
 // Weak pointer reference
         std::weak_ptr<Image>& i;                std::weak_ptr<const Image>& i;
   const std::weak_ptr<Image>& i;          const std::weak_ptr<const Image>& i;
 \end{lstlisting}
+\pause
 \begin{center}
   Java has one reference type.  Here, we have \textbf{22}…
 \end{center}
@@ -194,22 +179,24 @@ const std::shared_ptr<Image>& i;        const std::shared_ptr<const Image>& i;
   \frametitle{C++ reference usage rationalised}
 \begin{block}{Class members}
   \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
-Image i;                     // Concrete instance
-std::shared_ptr<Image> i;    // Reference
+Image i;                     // Concrete instance§\pause§
+std::shared_ptr<Image> i;    // Reference§\pause§
 std::weak_ptr<Image> i;      // Weak reference
 \end{lstlisting}
+\pause
 \end{block}
 \begin{block}{Arguments}
   \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
-void read_plane(const Image& image);
+void read_plane(const Image& image);§\pause§
 void read_plane(const std::shared_ptr<Image>& image);
 \end{lstlisting}
+\pause
 \end{block}
 \begin{block}{Return}
   \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
-                  Image get_image(); // ownership transferred
-                 Image& get_image(); // ownership retained
- std::shared_ptr<Image> get_image(); // ownership shared/trans
+                  Image get_image(); // ownership transferred§\pause§
+                 Image& get_image(); // ownership retained§\pause§
+ std::shared_ptr<Image> get_image(); // ownership shared/trans§\pause§
 std::shared_ptr<Image>& get_image(); // ownership shared
 \end{lstlisting}
 \end{block}
@@ -218,15 +205,17 @@ std::shared_ptr<Image>& get_image(); // ownership shared
 \begin{frame}[fragile]
   \frametitle{C++ reference usage rationalised}
   \begin{itemize}
-  \item Safety: References can not be \texttt{null}.
-  \item Storing polymorphic types requires use of a
+  \item<1-> Safety: References can not be \texttt{null}.
+  \item<2-> Storing polymorphic types requires use of a
     \texttt{shared\_ptr}.
-  \item Safety: To avoid cyclic dependencies, use \texttt{weak\_ptr}.
-  \item Safety: To allow object destruction while maintaining a safe
+  \item<3-> Safety: To avoid cyclic dependencies, use \texttt{weak\_ptr}.
+  \item<4-> Safety: To allow object destruction while maintaining a safe
     reference, use \texttt{weak\_ptr}.
-  \item \texttt{weak\_ptr} is not directly usable.
-  \item \texttt{weak\_ptr} is convertible back to \texttt{shared\_ptr}
+  \item<5-> \texttt{weak\_ptr} is not directly usable.
+  \item<5-> \texttt{weak\_ptr} is convertible back to \texttt{shared\_ptr}
     for use \emph{if the object is still in existence}.
+  \item<6-> C++11 \emph{move semantics} (\texttt{\&\&}) improve
+    performance of ownership transfer
   \end{itemize}
 \end{frame}
 
@@ -248,11 +237,11 @@ class Image
 };
 \end{lstlisting}
   \begin{itemize}
-  \item C (C++) arrays essentially decay to plain pointers
-  \item Plain pointers have no associated size information
-  \item \texttt{std::array} is an array-like object
-  \item \texttt{std::array} size defined in the template
-  \item \texttt{std::array} can be passed like any object
+  \item<1-> C (C++) arrays essentially decay to plain pointers
+  \item<2-> Plain pointers have no associated size information
+  \item<3-> \texttt{std::array} is an array-like object
+  \item<4-> \texttt{std::array} size defined in the template
+  \item<5-> \texttt{std::array} can be passed like any object
   \end{itemize}
 \end{frame}
 
@@ -324,163 +313,6 @@ class Image
     \end{itemize}
   \end{itemize}
 \end{block}
-\end{frame}
-
-\section{Bio-Formats}
-\subsection{Building and installing}
-
-\begin{frame}[fragile]
-  \frametitle{Source layout}
-  \begin{columns}
-    \begin{column}{.5\linewidth}
-      \begin{semiverbatim}\tiny
-cpp
-├── cmake
-├── lib
-│   └── ome
-│       ├── bioformats
-│       │   └── detail
-│       ├── compat
-│       ├── internal
-│       ├── xerces
-│       │   └── dom
-│       └── xml
-│           ├── meta
-│           └── model
-│               ├── enums
-│               └── primitives
-└── test
-    ├── ome-bioformats
-    ├── ome-compat
-    ├── ome-internal
-    ├── ome-xerces
-    └── ome-xml
-\end{semiverbatim}
-      \end{column}
-    \begin{column}{.5\linewidth}
-      \begin{block}{compat}
-        Compatibility workarounds
-      \end{block}
-      \begin{block}{internal}
-        Private implementation details
-      \end{block}
-      \begin{block}{xerces}
-        Xerces-C XML DOM wrappers
-      \end{block}
-      \begin{block}{xml}
-        OME XML model and metadata
-      \end{block}
-      \begin{block}{bioformats}
-        Bio-Formats reader and writer interfaces and implementations
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Configuring and building with \texttt{cmake}}
-\begin{block}{Configure}
-  \begin{semiverbatim}\footnotesize
-% mkdir /tmp/bioformats-build
-% cd /tmp/bioformats-build
-% cmake ~/code/bioformats
-\end{semiverbatim}
-\end{block}
-\begin{block}{Build}
-  \begin{semiverbatim}\footnotesize
-% make -j8
-\end{semiverbatim}
-\end{block}
-\begin{block}{Install}
-  \begin{semiverbatim}\footnotesize
-% make DESTDIR=/tmp/bioformats-install install
-\end{semiverbatim}
-\end{block}
-The build directory is separate from the source directory.
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Configuring and building with \texttt{cmake}}
-\begin{block}{Installed directories}
-  \begin{semiverbatim}\tiny
-/tmp/bioformats-install
-└── usr
-    └── local
-        ├── include
-        │   └── ome
-        │       ├── bioformats
-        │       ├── compat
-        │       ├── xerces
-        │       │   └── dom
-        │       └── xml
-        │           ├── meta
-        │           └── model
-        │               ├── enums
-        │               └── primitives
-        └── lib
-            └── x86_64-linux-gnu
-                └── cmake
-\end{semiverbatim}
-\end{block}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Configuring and building with \texttt{cmake}}
-\begin{block}{Installed libraries}
-  \begin{semiverbatim}\scriptsize
-/tmp/bioformats-install/usr/local/lib
-└── x86_64-linux-gnu
-    ├── cmake
-    │   ├── ome-bioformats-config.cmake
-    │   ├── ome-xerces-config.cmake
-    │   └── ome-xml-config.cmake
-    ├── libome-bioformats.so -> libome-bioformats.so.5.1.0
-    ├── libome-bioformats.so.5.1.0
-    ├── libome-xerces.so -> libome-xerces.so.5.1.0
-    ├── libome-xerces.so.5.1.0
-    ├── libome-xml.so -> libome-xml.so.5.1.0
-    └── libome-xml.so.5.1.0
-\end{semiverbatim}
-\end{block}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{API Reference}
-\begin{block}{Doxygen}
-  \begin{itemize}
-  \item Doxygen is used to document all APIs
-    \item \url{http://ci.openmicroscopy.org/view/5.1/job/BIOFORMATS-5.1-latest-cpp/doxygen/annotated.html}
-  \end{itemize}
-\end{block}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Completed functionality}
-  \begin{itemize}
-  \item \texttt{cmake} build infrastructure
-  \item Platform compatibility infrastructure
-  \item \texttt{gtest} test framework
-  \item Xerces-C wrapper classes
-  \item \texttt{xsd-fu} C++ type handling and template conversion
-  \item OME-XML model objects and metadata stores
-  \item Core Bio-Formats interfaces and supporting classes
-  \item Linux and MacOS jenkins build infrastructure
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{TODO}
-  \begin{itemize}
-  \item Bio-Formats TIFF reader and writer
-  \item Bio-Formats OME-TIFF reader and writer
-  \item Bio-Formats OME-XML reader and writer
-  \item \texttt{showinf} and \texttt{bfconvert} equivalents
-  \item Comprehensive test cases
-  \item Windows jenkins build infrastructure
-  \item (Potential) Refactoring of the Java and C++ model and metadata code, and
-    some of the \texttt{FormatReader} and \texttt{FormatWriter}
-    interfaces
-  \end{itemize}
 \end{frame}
 
 \section*{Acknowledgements}
