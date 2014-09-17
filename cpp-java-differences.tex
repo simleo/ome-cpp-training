@@ -205,7 +205,6 @@ Pixels array[5];
   \frametitle{C++ pointers: pitfalls of “dumb” pointers}
   \begin{block}{One correct solution}
   \begin{lstlisting}
-
 {
   Image *i = new Image(filename);
 
@@ -277,31 +276,31 @@ Pixels array[5];
 
 \begin{frame}[fragile]
   \frametitle{C++ reference variants}
-  \begin{lstlisting}[basicstyle=\tiny\ttfamily]
+  \begin{lstlisting}[basicstyle=\tiny\ttfamily,frame=none]
 //          Non-constant                              Constant
-// -----------------------------       ---------------------------------------
+// -----------------------------           ------------------------------------
 // Pointer
-                       Image *i;§\pause§                               const Image *i;
-§\pause§                Image * const i;§\pause§                        const Image * const i;
+                         Image *§\pause§                                  const Image *
+§\pause§                   Image * const§\pause§                            const Image * const
 §\pause§
 // Reference
-                       Image& i;                               const Image& i;
+                          Image&                                   const Image&
 §\pause§
 // Shared pointer
-       std::shared_ptr<Image> i;               std::shared_ptr<const Image> i;
- const std::shared_ptr<Image> i;         const std::shared_ptr<const Image> i;
+          std::shared_ptr<Image>                   std::shared_ptr<const Image>
+    const std::shared_ptr<Image>             const std::shared_ptr<const Image>
 §\pause§
 // Shared pointer reference
-      std::shared_ptr<Image>& i;              std::shared_ptr<const Image>& i;
-const std::shared_ptr<Image>& i;        const std::shared_ptr<const Image>& i;
+         std::shared_ptr<Image>&                  std::shared_ptr<const Image>&
+   const std::shared_ptr<Image>&            const std::shared_ptr<const Image>&
 §\pause§
 // Weak pointer
-         std::weak_ptr<Image> i;                 std::weak_ptr<const Image> i;
-   const std::weak_ptr<Image> i;           const std::weak_ptr<const Image> i;
+            std::weak_ptr<Image>                     std::weak_ptr<const Image>
+      const std::weak_ptr<Image>               const std::weak_ptr<const Image>
 §\pause§
 // Weak pointer reference
-        std::weak_ptr<Image>& i;                std::weak_ptr<const Image>& i;
-  const std::weak_ptr<Image>& i;          const std::weak_ptr<const Image>& i;
+           std::weak_ptr<Image>&                    std::weak_ptr<const Image>&
+     const std::weak_ptr<Image>&              const std::weak_ptr<const Image>&
 \end{lstlisting}
 \pause
 \begin{center}
@@ -422,6 +421,27 @@ class Image
 
 \begin{frame}[fragile]
   \frametitle{Containers storing different types}
+\begin{block}{Arbitrary types: \texttt{boost::any}}
+  \begin{lstlisting}
+    boost::any value = Anything;
+
+    std::vector<boost::any> v;
+§\pause§    v.push_back(Anything);
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Assign and store any type
+  \item Type erasure (similar to Java generics)
+  \item Use for containers of arbitrary types
+    \pause
+  \item Flexible, but need to cast to each type used to extract
+  \item Code won't be able to handle all possible types meaningfully
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
 \begin{block}{Types with no common base: \texttt{boost::variant}}
   \begin{lstlisting}
     typedef boost::variant<int, std::string> variants;
@@ -433,20 +453,94 @@ class Image
     \pause
   \item Store a set of discriminated types
     \pause
+  \item “External polymorphism” via visitors
+    \pause
   \item Used to store original metadata
   \end{itemize}
 \end{block}
-\begin{block}{Arbitrary types: \texttt{boost::any}}
-  \begin{lstlisting}
-    std::vector<boost::any> v;
-§\pause§    v.push_back(Anything);
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+  \begin{block}{\texttt{boost::variant} visitor pattern (1)}
+    \footnotesize
+    \begin{lstlisting}[basicstyle=\scriptsize\ttfamily,frame=tlr]
+// Flatten MetadataMap vector values
+struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
+  MetadataMap& map; // Map of flattened elements
+  const MetadataMap::key_type& key; // Current key
+
+  MetadataMapFlattenVisitor
+    (MetadataMap&                 map,
+     const MetadataMap::key_type& key):
+    map(map), key(key) {}
+
+  // Output a scalar value of arbitrary type.
+  template <typename T> void
+  operator() (const T& v) const {
+    map.set(key, v);
+  }
 \end{lstlisting}
   \begin{itemize}
     \pause
-  \item Flexible, but need to cast to each type used to extract.
+  \item Function operator expanded for every variant scalar type
   \end{itemize}
-\end{block}
+  \end{block}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+  \begin{block}{\texttt{boost::variant} visitor pattern (2)}
+    \scriptsize
+    \begin{lstlisting}[frame=blr]
+  // Output a vector value of arbitrary type.
+  template <typename T> void
+  operator() (const std::vector<T>& c) const {
+    typename std::vector<T>::size_type idx = 1;
+    for (typename std::vector<T>::const_iterator i = c.begin();
+         i != c.end(); ++i, ++idx) {
+        std::ostringstream os;
+        os << key << " #" << idx;
+        map.set(os.str(), *i);
+      }
+  }
+};
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Function operator expanded for every variant vector type
+  \item Vectors are split into individual scalar values in the new map
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+  \begin{block}{\texttt{boost::variant} visitor application}
+    \scriptsize
+    \begin{lstlisting}
+MetadataMap
+MetadataMap::flatten() const {
+  MetadataMap newmap;
+
+  for (MetadataMap::const_iterator i = oldmap.begin();
+    i != oldmap.end(); ++i) {
+    MetadataMapFlattenVisitor v(newmap, i->first);
+    boost::apply_visitor(v, i->second);
+  }
+
+  return newmap;
+}
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Visitor created for each key in the original map
+  \item Visitor applied once using the value in the original map
+  \item The value type (\texttt{i->second}) selects the correct visitor template
+  \end{itemize}
+  \end{block}
+\end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{Interfaces}
@@ -454,6 +548,7 @@ class Image
 \end{block}
 \begin{block}{C++: Multiple inheritance}
   \begin{itemize}
+    \pause
   \item Interfaces are classes with:
     \begin{itemize}
       \item No instance variables
@@ -462,6 +557,7 @@ class Image
       \item \texttt{public virtual} destructor
       \item Deleted copy constructor and assignment operator
     \end{itemize}
+    \pause
   \item Classes implementing interfaces:
     \begin{itemize}
       \item Use \texttt{public} inheritance for parent class
