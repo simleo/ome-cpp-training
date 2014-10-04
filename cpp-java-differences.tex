@@ -244,7 +244,6 @@ pl.at(idx) = ...;
 \end{lstlisting}
 \pause
   \begin{itemize}
-    \pause
   \item Destructor run and memory freed automatically.
   \end{itemize}
 \end{block}
@@ -501,7 +500,7 @@ class Image
   // Safe; size defined
   typedef std::array<uint8_t, 256> LUT;
   const LUT& getLUT() const;
-        void setLUT(const LUT&);
+        void setLUT(const LUT& lut);
 };
 \end{lstlisting}
   \begin{itemize}
@@ -544,9 +543,9 @@ class Image
 \begin{block}{Arbitrary types: \texttt{boost::any}}
   \begin{lstlisting}
     boost::any value = Anything;
-
+§\pause§
     std::vector<boost::any> v;
-§\pause§    v.push_back(Anything);
+    v.push_back(Anything);
 \end{lstlisting}
   \begin{itemize}
     \pause
@@ -587,6 +586,9 @@ class Image
   \frametitle{\texttt{MetadataMap} \texttt{boost::variant} visitor use}
     \scriptsize
     \begin{lstlisting}
+namespace { MetadataMap map; }
+void test() { MetadataMap flat_map (map.flatten()); }
+§\pause§
 MetadataMap MetadataMap::flatten() const {
   MetadataMap newmap;
 
@@ -598,9 +600,6 @@ MetadataMap MetadataMap::flatten() const {
 
   return newmap;
 }
-
-namespace { MetadataMap map; }
-void test() { MetadataMap flat_map (map.flatten()); }
 \end{lstlisting}
   \begin{itemize}
     \pause
@@ -664,18 +663,18 @@ struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
   \frametitle{\texttt{VariantPixelBuffer} comparison with \texttt{variant}}
   \scriptsize
   \begin{lstlisting}
-bool VariantPixelBuffer::operator ==
-    (const VariantPixelBuffer& rhs) const
-{
-  return boost::apply_visitor(PBCompareVisitor(),
-                              buffer, rhs.buffer);
-}
-
 void test() {
   VariantPixelBuffer a, b;
   if (a == b) {
     // Buffers are the same.
   }
+}
+§\pause§
+bool VariantPixelBuffer::operator ==
+    (const VariantPixelBuffer& rhs) const
+{
+  return boost::apply_visitor(PBCompareVisitor(),
+                              buffer, rhs.buffer);
 }
 \end{lstlisting}
   \begin{itemize}
