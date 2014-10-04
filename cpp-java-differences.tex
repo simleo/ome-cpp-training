@@ -18,10 +18,26 @@
   \end{center}
 \end{frame}
 
-\section*{Overview}
 \frame{
 \frametitle{Overview}
 \tableofcontents
+}
+
+\frame{
+\frametitle{History}
+\begin{description}
+\item[1983]C++ released (Cfront)
+\item[1989]C++ 2.0
+\pause
+\item[1996](Java 1.0)
+\pause
+\item[1998]ISO C++ Standard (C++98)
+\item[2003]ISO standard corrections (C++03)
+\item[2007]ISO C++ library updates (C++TR1) [current~baseline]
+\pause
+\item[2011]ISO C++ Standard (C++11) [current standard]
+\item[2014]ISO standard corrections (C++14)
+\end{description}
 }
 
 \section{C++ and Java differences}
@@ -76,8 +92,9 @@ Pixels[] array = new Pixels[5];
   \frametitle{C++ types}
   \begin{block}{Primitive types}
     \begin{lstlisting}
-uint32_t i;
-double d;
+int16_t  i1;
+uint32_t i2;
+double   d;
 \end{lstlisting}
     \begin{itemize}
       \pause
@@ -110,6 +127,8 @@ Pixels&        pixelsref(pixels);
   \item Pointers may be \texttt{const}
     \pause
   \item Destruction is deterministic
+    \pause
+  \item \textbf{Never \emph{ever} use \texttt{new}!  Seriously.}
   \end{itemize}
   \end{block}
 \end{frame}
@@ -127,7 +146,34 @@ Pixels array[5];
   \item Arrays are not safe to index out of bounds
     \pause
   \item Size information lost at runtime
+    \pause
+  \item \textbf{Never use arrays outside static initialisers}
   \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{typedef}}
+  \begin{block}{Simplified type names}
+    \begin{lstlisting}
+typedef std::vector<std::string> string_list;
+string_list l;
+string_list::const_iterator i = l.begin();
+// NOT std::vector<std::string>::const_iterator
+
+typedef std::vector<Pixels> plist;
+plist pl(6);
+plist::size_type idx = 2;
+// size_type NOT unsigned int or uint32_t
+pl.at(idx) = ...;
+\end{lstlisting}
+    \begin{itemize}
+      \pause
+    \item Standard container types e.g. \texttt{size\_type}, \texttt{value\_type}
+      \pause
+    \item Used widely in classes and class templates
+    \item Consistency needed for generic programming
+    \end{itemize}
   \end{block}
 \end{frame}
 
@@ -145,6 +191,8 @@ Pixels array[5];
       \pause
     \item Exceptions can be thrown at any point
       \pause
+    \item But: Never throw in a destructor
+      \pause
     \item Not necessary or typical to check exceptions except where needed
       \pause
     \item All code must be exception safe
@@ -153,6 +201,25 @@ Pixels array[5];
 \end{frame}
 
 \subsection{Reference handling}
+
+\begin{frame}[fragile]
+  \frametitle{C++ pointers: pitfalls of “dumb” pointers}
+\begin{block}{Automatic allocation of values (stack)}
+  \begin{lstlisting}
+{
+  Image image(filename);
+  image.read_plane();
+
+  // Object destroyed when i goes out of scope
+}
+\end{lstlisting}
+\pause
+  \begin{itemize}
+    \pause
+  \item Destructor run and memory freed automatically.
+  \end{itemize}
+\end{block}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{C++ pointers: pitfalls of “dumb” pointers}
@@ -477,6 +544,7 @@ class Image
   \item “External polymorphism” via visitors
     \pause
   \item Used to store original metadata
+  \item Used to store nD pixel data of different types
   \end{itemize}
 \end{block}
 \end{frame}
@@ -537,7 +605,7 @@ struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
 
 \begin{frame}[fragile]
   \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor application}
+  \begin{block}{\texttt{boost::variant} visitor application (1)}
     \scriptsize
     \begin{lstlisting}
 MetadataMap
@@ -562,6 +630,57 @@ MetadataMap::flatten() const {
   \end{block}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+  \begin{block}{\texttt{boost::variant} visitor pattern (3)}
+    \scriptsize
+    \begin{lstlisting}
+struct PBCompareVisitor : public boost::static_visitor<bool> {
+  template <typename T, typename U>
+  bool operator() (const T& /* lhs */,
+                   const U& /* rhs */) const {
+    return false;
+  }
+
+  template <typename T>
+  bool operator() (const T& lhs,
+                   const T& rhs) const {
+    return lhs && rhs && (*lhs == *rhs);
+  }
+};
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Comparisons of different types always \texttt{false}
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Containers storing different types}
+  \begin{block}{\texttt{boost::variant} visitor application (2)}
+    \scriptsize
+    \begin{lstlisting}
+bool VariantPixelBuffer::operator ==
+    (const VariantPixelBuffer& rhs) const
+{
+  return boost::apply_visitor(PBCompareVisitor(), buffer, rhs.buffer);
+}
+
+void test() {
+  VariantPixelBuffer a, b;
+  if (a == b) {
+    ...
+  }
+}
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item VariantPixelBuffer contains any supported pixel type.
+  \item Pixel comparision only performed for compatible types.
+  \end{itemize}
+  \end{block}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Interfaces}
