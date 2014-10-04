@@ -40,8 +40,8 @@
 \end{description}
 }
 
-\section{C++ and Java differences}
-\subsection{C++ and Java types}
+\section{Basic language differences}
+\subsection{Java types and classes}
 
 \begin{frame}[fragile]
   \frametitle{Java types}
@@ -105,6 +105,7 @@ double   d;
   \end{block}
 \end{frame}
 
+\subsection{C++ types and classes}
 \begin{frame}[fragile]
   \frametitle{C++ types}
   \begin{block}{Classes}
@@ -177,6 +178,7 @@ pl.at(idx) = ...;
   \end{block}
 \end{frame}
 
+\subsection{Exception handling}
 \begin{frame}[fragile]
   \frametitle{Exceptions}
   \begin{block}{Java}
@@ -191,7 +193,7 @@ pl.at(idx) = ...;
       \pause
     \item Exceptions can be thrown at any point
       \pause
-    \item But: Never throw in a destructor
+    \item But: \textbf{Never throw in a destructor}
       \pause
     \item Not necessary or typical to check exceptions except where needed
       \pause
@@ -200,8 +202,35 @@ pl.at(idx) = ...;
   \end{block}
 \end{frame}
 
-\subsection{Reference handling}
+\subsection{Interfaces}
+\begin{frame}[fragile]
+  \frametitle{Interfaces}
+\begin{block}{Java: Single inheritance, plus interfaces}
+\end{block}
+\begin{block}{C++: Multiple inheritance}
+  \begin{itemize}
+    \pause
+  \item Interfaces are classes with:
+    \begin{itemize}
+      \item No instance variables
+      \item Pure virtual methods
+      \item \texttt{protected} default constructor
+      \item \texttt{public virtual} destructor
+      \item Deleted copy constructor and assignment operator
+    \end{itemize}
+    \pause
+  \item Classes implementing interfaces:
+    \begin{itemize}
+      \item Use \texttt{public} inheritance for parent class
+      \item Use \texttt{virtual public} inheritance for implemented interfaces
+      \item \texttt{virtual} destructor
+    \end{itemize}
+  \end{itemize}
+\end{block}
+\end{frame}
 
+\section{Reference handling and memory management}
+\subsection{Pointer problems}
 \begin{frame}[fragile]
   \frametitle{C++ pointers: pitfalls of “dumb” pointers}
 \begin{block}{Automatic allocation of values (stack)}
@@ -313,6 +342,7 @@ pl.at(idx) = ...;
   \end{block}
 \end{frame}
 
+\subsection{Smart pointers and RAII}
 \begin{frame}[fragile]
   \frametitle{C++ pointers: \texttt{std::shared\_ptr} as a “smart” pointer}
   \begin{lstlisting}
@@ -362,6 +392,7 @@ pl.at(idx) = ...;
     \end{itemize}
 \end{frame}
 
+\subsection{Reference usage}
 \begin{frame}[fragile]
   \frametitle{C++ reference variants}
   \begin{lstlisting}[basicstyle=\tiny\ttfamily,frame=none]
@@ -441,8 +472,8 @@ std::shared_ptr<Image>& get_image(); // ownership shared
   \end{itemize}
 \end{frame}
 
-\subsection{Additional API concerns}
-
+\section{Containers}
+\subsection{Arrays}
 \begin{frame}[fragile]
   \frametitle{Safe array passing: \texttt{std::array} / \texttt{boost::array}}
   \begin{block}{C++ array problems}
@@ -483,6 +514,7 @@ class Image
   \end{block}
 \end{frame}
 
+\subsection{Storing different types}
 \begin{frame}[fragile]
   \frametitle{Containers storing different types}
 \begin{block}{Types with a common base}
@@ -530,7 +562,7 @@ class Image
 
 \begin{frame}[fragile]
   \frametitle{Containers storing different types}
-\begin{block}{Types with no common base: \texttt{boost::variant}}
+\begin{block}{Fixed set of types: \texttt{boost::variant}}
   \begin{lstlisting}
     typedef boost::variant<int, std::string> variants;
 §\pause§    std::vector<variants> v;
@@ -544,14 +576,42 @@ class Image
   \item “External polymorphism” via visitors
     \pause
   \item Used to store original metadata
-  \item Used to store nD pixel data of different types
+  \item Used to store nD pixel data of different pixel types
   \end{itemize}
 \end{block}
 \end{frame}
 
+\subsection{variant examples}
+
 \begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor pattern (1)}
+  \frametitle{\texttt{MetadataMap} \texttt{boost::variant} visitor use}
+    \scriptsize
+    \begin{lstlisting}
+MetadataMap MetadataMap::flatten() const {
+  MetadataMap newmap;
+
+  for (MetadataMap::const_iterator i = oldmap.begin();
+       i != oldmap.end(); ++i) {
+    MetadataMapFlattenVisitor v(newmap, i->first);
+    boost::apply_visitor(v, i->second);
+  }
+
+  return newmap;
+}
+
+namespace { MetadataMap map; }
+void test() { MetadataMap flat_map (map.flatten()); }
+\end{lstlisting}
+  \begin{itemize}
+    \pause
+  \item Visitor created for each key in the original map
+  \item Visitor applied once using the value in the original map
+  \item The value type (\texttt{i->second}) selects the correct visitor template
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{MetadataMap} \texttt{boost::variant} visitor pattern (1)}
     \footnotesize
     \begin{lstlisting}[basicstyle=\scriptsize\ttfamily,frame=tlr]
 // Flatten MetadataMap vector values
@@ -565,8 +625,8 @@ struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
     map(map), key(key) {}
 
   // Output a scalar value of arbitrary type.
-  template <typename T> void
-  operator() (const T& v) const {
+  template <typename T>
+  void operator() (const T& v) const {
     map.set(key, v);
   }
 \end{lstlisting}
@@ -574,17 +634,15 @@ struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
     \pause
   \item Function operator expanded for every variant scalar type
   \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor pattern (2)}
+  \frametitle{\texttt{MetadataMap} \texttt{boost::variant} visitor pattern (2)}
     \scriptsize
     \begin{lstlisting}[frame=blr]
   // Output a vector value of arbitrary type.
-  template <typename T> void
-  operator() (const std::vector<T>& c) const {
+  template <typename T>
+  void operator() (const std::vector<T>& c) const {
     typename std::vector<T>::size_type idx = 1;
     for (typename std::vector<T>::const_iterator i = c.begin();
          i != c.end(); ++i, ++idx) {
@@ -600,41 +658,37 @@ struct MetadataMapFlattenVisitor : public boost::static_visitor<> {
   \item Function operator expanded for every variant vector type
   \item Vectors are split into individual scalar values in the new map
   \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor application (1)}
-    \scriptsize
-    \begin{lstlisting}
-MetadataMap
-MetadataMap::flatten() const {
-  MetadataMap newmap;
+  \frametitle{\texttt{VariantPixelBuffer} comparison with \texttt{variant}}
+  \scriptsize
+  \begin{lstlisting}
+bool VariantPixelBuffer::operator ==
+    (const VariantPixelBuffer& rhs) const
+{
+  return boost::apply_visitor(PBCompareVisitor(),
+                              buffer, rhs.buffer);
+}
 
-  for (MetadataMap::const_iterator i = oldmap.begin();
-    i != oldmap.end(); ++i) {
-    MetadataMapFlattenVisitor v(newmap, i->first);
-    boost::apply_visitor(v, i->second);
+void test() {
+  VariantPixelBuffer a, b;
+  if (a == b) {
+    // Buffers are the same.
   }
-
-  return newmap;
 }
 \end{lstlisting}
   \begin{itemize}
     \pause
-  \item Visitor created for each key in the original map
-  \item Visitor applied once using the value in the original map
-  \item The value type (\texttt{i->second}) selects the correct visitor template
+  \item VariantPixelBuffer contains any supported pixel type.
+  \item Pixel comparision only performed for compatible types.
   \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor pattern (3)}
-    \scriptsize
-    \begin{lstlisting}
+  \frametitle{\texttt{VariantPixelBuffer} comparison visitor}
+  \scriptsize
+  \begin{lstlisting}
 struct PBCompareVisitor : public boost::static_visitor<bool> {
   template <typename T, typename U>
   bool operator() (const T& /* lhs */,
@@ -653,64 +707,9 @@ struct PBCompareVisitor : public boost::static_visitor<bool> {
     \pause
   \item Comparisons of different types always \texttt{false}
   \end{itemize}
-  \end{block}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Containers storing different types}
-  \begin{block}{\texttt{boost::variant} visitor application (2)}
-    \scriptsize
-    \begin{lstlisting}
-bool VariantPixelBuffer::operator ==
-    (const VariantPixelBuffer& rhs) const
-{
-  return boost::apply_visitor(PBCompareVisitor(), buffer, rhs.buffer);
-}
-
-void test() {
-  VariantPixelBuffer a, b;
-  if (a == b) {
-    ...
-  }
-}
-\end{lstlisting}
-  \begin{itemize}
-    \pause
-  \item VariantPixelBuffer contains any supported pixel type.
-  \item Pixel comparision only performed for compatible types.
-  \end{itemize}
-  \end{block}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Interfaces}
-\begin{block}{Java: Single inheritance, plus interfaces}
-\end{block}
-\begin{block}{C++: Multiple inheritance}
-  \begin{itemize}
-    \pause
-  \item Interfaces are classes with:
-    \begin{itemize}
-      \item No instance variables
-      \item Pure virtual methods
-      \item \texttt{protected} default constructor
-      \item \texttt{public virtual} destructor
-      \item Deleted copy constructor and assignment operator
-    \end{itemize}
-    \pause
-  \item Classes implementing interfaces:
-    \begin{itemize}
-      \item Use \texttt{public} inheritance for parent class
-      \item Use \texttt{virtual public} inheritance for implemented interfaces
-      \item \texttt{virtual} destructor
-    \end{itemize}
-  \end{itemize}
-\end{block}
-\end{frame}
-
-\section*{Acknowledgements}
-
-\frame{
+\begin{frame}[plain]
   \frametitle{Acknowledgements}
   \parbox[t]{0.45\textwidth}{
     \begin{itemize}
@@ -738,11 +737,15 @@ void test() {
     \end{itemize}
   }
 
+  \bigskip
+  \bigskip
+  \bigskip
+  \bigskip
   \begin{center}
     \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
     \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
-    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{wellcome}}
   \end{center}
-}
+\end{frame}
 
 \end{document}
