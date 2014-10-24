@@ -1,0 +1,64 @@
+strict digraph G {
+  acinclude_m4 [label="acinclude.m4",color=black shape="box"];
+  ltmain_sh [label="ltmain.sh",color=black shape="box"];
+  libtoolmacros [label="[libtoolmacros]",color=black shape="box"];
+  localmacros [label="[localmacros]",color=black shape="box"];
+  extmacros [label="[extmacros]",color=black shape="box"];
+  aclocal_m4 [label="aclocal.m4",color=black shape="box"];
+  configure_ac [label="configure.ac",color=black shape="box"];
+  Makefile_am [label="Makefile.am",color=black shape="box"];
+  Makefile_in [label="Makefile.in",color=black shape="box"];
+  Makefile [label="Makefile",color=black shape="box"];
+  config_h_in [label="config.h.in",color=black shape="box"];
+  config_h [label="config.h",color=black shape="box"];
+  config_cache [label="config.cache",color=black shape="box"];
+  config_log [label="config.log",color=black shape="box"];
+
+  libtoolize [color=red]
+  aclocal [color=red]
+  autoconf [color=red]
+  autoheader [color=red]
+  automake[color=red]
+  config_status [label="config.status" color=red]
+  make [color=blue]
+  libtool [color=blue]
+
+  libtoolize -> libtoolmacros
+  libtoolize -> ltmain_sh
+
+  acinclude_m4 -> aclocal
+  libtoolmacros -> aclocal
+  extmacros -> aclocal
+  localmacros -> aclocal
+  configure_ac -> aclocal
+  aclocal -> aclocal_m4
+
+  aclocal_m4 -> autoheader
+  configure_ac -> autoheader
+  autoheader -> config_h_in
+
+  configure_ac -> automake
+  Makefile_am -> automake
+  configure_ac -> automake
+  automake -> Makefile_in
+
+  aclocal_m4 -> autoconf
+  configure_ac -> autoconf
+  autoconf -> configure
+
+  configure -> config_cache
+  configure -> config_log
+  configure -> config_status
+
+  ltmain_sh -> config_status
+  config_h_in -> config_status
+  Makefile_in -> config_status
+
+  config_status -> config_h
+  config_status -> Makefile
+  config_status -> libtool
+
+  config_h -> make
+  Makefile -> make
+  make -> libtool
+}
