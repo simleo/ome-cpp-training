@@ -1,0 +1,29 @@
+strict digraph G {
+  localmacros [label="[localmacros]",color=black shape="box"];
+  extmacros [label="[extmacros]",color=black shape="box"];
+  CMakeLists [label="CMakeLists.txt",color=black shape="box"];
+  config_h_in [label="config.h.in",color=black shape="box"];
+  config_h [label="config.h",color=black shape="box"];
+  Makefile [label="Makefile",color=black shape="box"];
+  CMakeCache [label="CMakeCache.txt",color=black shape="box"];
+  CMakeOutput [label="CMakeOutput.log",color=black shape="box"];
+  CMakeError [label="CMakeError.log",color=black shape="box"];
+
+  cmake [label="cmake" color=red]
+  make [color=blue]
+
+  localmacros -> CMakeLists
+  extmacros -> CMakeLists
+  config_h_in -> CMakeLists
+
+  CMakeLists -> cmake
+
+  cmake -> CMakeCache
+  cmake -> CMakeOutput
+  cmake -> CMakeError
+  cmake -> Makefile
+  cmake -> config_h
+
+  Makefile -> make
+
+}
