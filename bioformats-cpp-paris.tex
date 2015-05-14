@@ -7,9 +7,9 @@
 
 \include{common}
 
-\title{C++ Build Environment Setup for Building Bio-Formats and OmeroCpp}
+\title{Building and Using the Bio-Formats C++ Implementation}
 \author{Roger Leigh}
-\date{Wednesday 3\textsuperscript{rd} September 2014\\University of Dundee}
+\date{Juin 2015\\Institut Pasteur}
 
 \begin{document}
 
@@ -28,7 +28,7 @@
 \tableofcontents
 }
 
-\section{Installation of prerequisites}
+\section{Prerequisites}
 \subsection{Compiler and toolchain}
 \begin{frame}
   \frametitle{Default compilers}
@@ -54,11 +54,6 @@
     version of Visual Studio.  (Microsoft love to make development for
     their platform easy and painless.  Not!)
   \end{itemize}
-
-  On the next few pages, the needed packages for each platform will be
-  detailed.  This includes all packages needed for Bio-Formats and
-  OMERO including unit testing and API documentation generation; you
-  might not need them all but it doesn't hurt to have them all.
 \end{frame}
 
 \begin{frame}
@@ -68,23 +63,18 @@
   \begin{columns}
     \begin{column}{.5\linewidth}
       \begin{itemize}
-      \item[] \pkg{devel/apache-ant}
       \item[] \pkg{devel/boost-all}
       \item[] \pkg{devel/binutils}
       \item[] \pkg{devel/cmake}
       \item[] \pkg{devel/doxygen}
       \item[] \pkg{devel/git}
       \item[] \pkg{devel/googletest}
-      \item[] \pkg{devel/ice}
       \item[] \pkg{graphics/graphviz}
       \item[] \pkg{graphics/tiff}
       \end{itemize}
       \end{column}
     \begin{column}{.5\linewidth}
     \begin{itemize}
-      \item[] \pkg{java/openjdk7}
-      \item[] \pkg{java/junit}
-      \item[] \pkg{lang/clang33}
       \item[] \pkg{lang/python}
       \item[] \pkg{lang/python27}
       \item[] \pkg{print/texlive-full}
@@ -95,10 +85,6 @@
     \end{itemize}
     \end{column}
   \end{columns}
-
-  \bigskip
-  Add \path{/usr/local/bin} before \path{/usr/bin} in the \env{PATH}
-  so that the newer GNU \cmd{ld} is used.
 \end{frame}
 
 \begin{frame}
@@ -108,13 +94,11 @@
   \begin{columns}
     \begin{column}{.5\linewidth}
       \begin{itemize}
-      \item[] \pkg{ant ant-contrib ant-optional}
       \item[] \pkg{build-essential}
       \item[] \pkg{cmake}
       \item[] \pkg{doxygen}
       \item[] \pkg{git}
       \item[] \pkg{graphviz}
-      \item[] \pkg{junit4}
       \item[] \pkg{libboost-all-dev}
       \item[] \pkg{libgtest-dev}
       \item[] \pkg{libtiff5-dev}
@@ -123,7 +107,6 @@
     \end{column}
     \begin{column}{.5\linewidth}
       \begin{itemize}
-      \item[] \pkg{libzeroc-ice35-dev ice35-services ice35-slice ice35-translators icebox python-zeroc-ice}
       \item[] \pkg{openjdk-7-jdk openjdk-7-jre}
       \item[] \pkg{python python2.7}
       \item[] \pkg{texlive-full}
@@ -156,8 +139,6 @@
     \end{column}
     \begin{column}{.5\linewidth}
       \begin{itemize}
-      \item[] \pkg{java-1.7.0-openjdk}
-      \item[] \pkg{junit4}
       \item[] \pkg{libtiff-devel}
       \item[] \pkg{python-genshi} (or use \cmd{pip})
       \item[] \pkg{python}
@@ -171,9 +152,6 @@
   Install the following by hand:
 
   \begin{itemize}
-  \item Ant
-  \item JUnit
-  \item Ice (RPMs available)
   \item \TeX{}Live (via \cmd{install-tl})
   \item \pkg{sphinx} (via \cmd{pip})
 \end{itemize}
@@ -189,7 +167,6 @@
   \begin{columns}
     \begin{column}{.5\linewidth}
       \begin{itemize}
-      \item[] \pkg{ant}
       \item[] \pkg{boost}
       \item[] \pkg{cmake}
       \item[] \pkg{doxygen}
@@ -200,7 +177,6 @@
     \begin{column}{.5\linewidth}
       \begin{itemize}
       \item[] \pkg{hdf5}
-      \item[] \pkg{ice}
       \item[] \pkg{libtiff}
       \item[] \pkg{python}
       \item[] \pkg{xerces-c}
@@ -211,7 +187,6 @@
 Install the following by hand:
 \begin{itemize}
 \item Google Test (\pkg{gtest}) from zip or subversion
-\item Java (JDK 1.7 from Oracle)
 \item \TeX{}Live (via \cmd{install-tl} or Mac\TeX{})
 \item \pkg{sphinx} (via \cmd{pip})
 \end{itemize}
@@ -221,17 +196,14 @@ Install the following by hand:
   \frametitle{Windows installation (packages)}
   Install the following by hand:
 \begin{itemize}
-\item Ant
 \item CMake
 \item Doxygen and Graphviz
 \item Git (msysgit)
-\item Ice (latest ZeroC installer or our 3.5.1 build)
-\item Java (latest JDK 1.7 from Oracle)
 \item \LaTeX{} (Mik\TeX{})
 \item Python (latest 2.7 from python.org; 64-bit recommended)
 \item \pkg{genshi}
 \item \pkg{sphinx}
-\item Visual Studio (2010, 2012 or 2013; Full or Express edition)
+\item Visual Studio (2015, 2013, 2012 or 2010; any edition)
 \end{itemize}
 \end{frame}
 
@@ -276,11 +248,8 @@ Build and install the following by hand (for Bio-Formats):
   \begin{itemize}
   \item Google Test \dotfill \href{https://code.google.com/p/googletest/}{(website)} \href{https://code.google.com/p/googletest/downloads/detail?name=gtest-1.7.0.zip}{(download zip)} \href{http://googletest.googlecode.com/svn/tags/release-1.7.0}{(svn tag)}
   \item CMake \dotfill \href{http://cmake.org/}{(website)} \href{http://cmake.org/cmake/resources/software.html}{(download)}
-  \item Java \dotfill \href{http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html}{(JDK7 download)}
-  \item Visual Studio \dotfill \href{https://my.dundee.ac.uk/webapps/blackboard/content/listContent.jsp?course\_id=\_28436\_1\&content_id=\_3952234\_1}{(Dundee staff)} \href{http://www.visualstudio.com/downloads/download-visual-studio-vs\#d-express-windows-desktop}{(Express download)}
-  \item Ant \dotfill \href{http://ant.apache.org/}{(website)} \href{http://ant.apache.org/bindownload.cgi}{(download)}
+  \item Visual Studio \dotfill \href{https://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs.aspx}{(2015RC Community Edition download)}
   \item Git \dotfill \href{http://www.git-scm.com/}{(website)} \href{http://www.git-scm.com/downloads}{(download)}
-  \item Ice \dotfill \href{http://zeroc.com/}{(website)} \href{http://zeroc.com/download.html\#win32\_msi}{(download)}
   \item Python \dotfill \href{https://www.python.org/}{(website)} \href{https://www.python.org/download/releases/2.7.8/}{(download)} \href{http://www.lfd.uci.edu/\~gohlke/pythonlibs/}{(extra packages)}
   \item \LaTeX{} \dotfill \href{https://www.tug.org/texlive/}{(\TeX{}Live)} \href{https://www.tug.org/texlive/quickinstall.html}{(\TeX{}Live install)} \href{http://www.miktex.org/}{(Mik\TeX{} website)} \href{http://www.miktex.org/download}{(Mik\TeX{} download)}
   \item Doxygen \dotfill \href{http://www.stack.nl/\~dimitri/doxygen/}{(website)} \href{http://www.stack.nl/\~dimitri/doxygen/download.html}{(download)}
@@ -313,7 +282,7 @@ Build and install the following by hand (for Bio-Formats):
     \item Activate a python virtualenv if needed
     \item Ensure that all tools are on the user \texttt{PATH}
       \begin{itemize}
-        \item \cmd{ant}, \cmd{cmake}, \cmd{doxygen}, \cmd{dot}, \cmd{git}, \cmd{python}, \cmd{java}, \cmd{sphinx}, \cmd{xelatex}
+        \item \cmd{cmake}, \cmd{doxygen}, \cmd{dot}, \cmd{git}, \cmd{python}, \cmd{sphinx}, \cmd{xelatex}
       \end{itemize}
     \item Set \texttt{CMAKE\_PREFIX\_PATH} if some libraries and tools are not on the default search path.
     \item Not all tools need to be on the default path; some will be discovered automatically by \cmd{cmake}
@@ -321,24 +290,7 @@ Build and install the following by hand (for Bio-Formats):
   \end{itemize}
 \end{frame}
 
-\section{Building C++ code}
-
-\subsection{Build systems}
-
-\begin{frame}
-  \frametitle{Available build systems}
-  There are many available build systems, which include:
-
-  \begin{itemize}
-  \item Make and GNU Make
-  \item GNU Autotools
-  \item CMake
-  \item Qt \cmd{qmake}
-  \item SCons
-  \item Jam / BJam
-  \item Ant / Maven / Gradle
-  \end{itemize}
-\end{frame}
+\section{Building}
 
 \subsection{cmake introduction}
 
@@ -374,12 +326,6 @@ Build and install the following by hand (for Bio-Formats):
       \item Available generators
     \end{itemize}
   \end{block}
-  \begin{block}{Building \pkg{gtest} on MacOS X}
-    \begin{itemize}
-      \item Running cmake
-      \item Building
-    \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}
@@ -393,53 +339,9 @@ Build and install the following by hand (for Bio-Formats):
       \item Installing
     \end{itemize}
   \end{block}
-  \begin{block}{Building OmeroCpp on Windows}
-    \begin{itemize}
-      \item Running cmake
-      \item Building
-      \item Installing
-    \end{itemize}
-  \end{block}
 \end{frame}
 
 \section{Examples}
-\subsection{gtest on Unix}
-
-\begin{frame}[fragile]
-  \frametitle{Building \pkg{gtest} on U\textsc{nix}}
-  Build from downloaded zip:
-
-  \begin{semiverbatim}
-% cd /tmp
-% unzip ~/Downloads/gtest-1.7.0.zip
-% cd gtest-1.7.0
-% cmake .
-% make
-\end{semiverbatim}
-
-This is used with other builds by setting the \env{GTEST\_ROOT}
-environment variable or the \opt{GTEST\_ROOT} \cmd{cmake} cache
-variable.
-
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Building \pkg{gtest} on Debian or Ubuntu}
-  Build using installed sources and headers from the \pkg{libgtest-dev} package:
-
-  \begin{semiverbatim}
-% cd /tmp
-% mkdir gtest
-% cd gtest
-% cmake /usr/src/gtest
-% make
-\end{semiverbatim}
-
-This is used with other builds by setting the \env{GTEST\_ROOT}
-environment variable or the \opt{GTEST\_ROOT} \cmd{cmake} cache
-variable.
-\end{frame}
-
 \subsection{Bio-Formats on Unix}
 
 \begin{frame}[fragile]
@@ -517,171 +419,37 @@ an alternative prefixed location, which is useful for testing and
 packaging for release.
 \end{frame}
 
-\subsection{OmeroCpp on Unix}
+\section{Future work}
+\subsection{In progress}
 
-\begin{frame}[fragile]
-  \frametitle{Building OmeroCpp on U\textsc{nix} (1)}
-  \scriptsize
-  Building from git or release zip:
-
-  Configure the build. optionally showing Ice autodetection diagnostics:
-
-  \begin{semiverbatim}
-% mkdir /tmp/ocppbuild
-% cd /tmp/ocppbuild
-% cmake -DGTEST_ROOT=/tmp/gtest [-DIce_HOME=/path/to/ice] \\
-  [-DIce_DEBUG=ON] /path/to/openmicroscopy
-\end{semiverbatim}
-
-  Show cache variables and advanced cache variables which may be used to customise the build:
-
-  \begin{semiverbatim}
-% cmake -LH
-% cmake -LAH
-\end{semiverbatim}
-
-Run the build with either of:
-
-  \begin{semiverbatim}
-% make [VERBOSE=1]
-% cmake --build .
-\end{semiverbatim}
+\begin{frame}
+  \frametitle{In the pipeline}
+  \begin{itemize}
+  \item \cmd{bfconvert}
+  \item Units
+  \item 2015-01 data model
+  \item Windows support
+  \item API improvements
+  \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Building OmeroCpp on U\textsc{nix} (2)}
-  \scriptsize
-Alternatively, it is possible to build in the openmicroscopy tree
-directly:
+\subsection{Feedback}
+\begin{frame}
+  \frametitle{Feedback}
+  \begin{itemize}
+  \item Which features do \emph{you} need
+  \item Readers
+  \item Writers
+  \item Documenation
+  \item Tools
+  \item Support
+  \item Integration
+  \end{itemize}
 
-  \begin{semiverbatim}
-% ./build.py
-% ./build.py build-cpp -Dcmake.opts="cmake options"
-\end{semiverbatim}
-
-However, passing in cmake options and using different generators is
-much more difficult and more fragile with this method.
+  Any feedback would be welcome and will help set and prioritise the
+  goals for future releases.
 \end{frame}
 
-
-\begin{frame}[fragile]
-  \frametitle{Building OmeroCpp on U\textsc{nix} (3)}
-  \scriptsize
-
-Run the unit tests with any of:
-
-  \begin{semiverbatim}
-% make test
-% cmake --build . --target test
-% ctest [-V]
-\end{semiverbatim}
-
-Note that \env{ICE\_CONFIG} needs setting with the details of a
-running OMERO server which the unit and integration tests can connect
-to for testing against.
-\bigskip
-
-Individual tests may be run by hand:
-
-  \begin{semiverbatim}
-% components/tools/OmeroCpp/test/unit/unit
-% components/tools/OmeroCpp/test/unit/unit --gtest_help
-\end{semiverbatim}
-
-Use \opt{--gtest\_help} to list test options.  Useful when debugging
-to run specific tests or subsets of the tests.
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Building OmeroCpp on U\textsc{nix} (4)}
-  \scriptsize
-
-Install the build with either of:
-
-  \begin{semiverbatim}
-% make install [VERBOSE=1] [DESTDIR=/staging/path]
-% cmake --build . --target install
-\end{semiverbatim}
-
-By default, this will install into \opt{CMAKE\_INSTALL\_PREFIX} which
-will default to \path{/usr/local}.  Use \opt{DESTDIR} to install into
-an alternative prefixed location, which is useful for testing and
-packaging for release.
-\end{frame}
-
-\subsection{gtest and OmeroCpp on Windows}
-
-\begin{frame}[fragile]
-  \frametitle{Windows environment}
-  \scriptsize
-  I set up the environment with a custom batch file:
-
-  \begin{semiverbatim}
-set "ICE_HOME=C:\\Program Files (x86)\\ZeroC\\Ice-3.5.1"
-set "PATH=\%ICE_HOME\%\\bin\\vc110\\x64;C:\\Program Files (x86)\\CMake\\bin;%PATH%"
-c:\\venv\\27\\scripts\\activate
-\end{semiverbatim}
-
-I also have Ant, Git, Java (JDK), and LaTeX on the default \env{PATH}.
-However, these could also be included in the custom batch file.
-
-I use
-\href{https://github.com/cbucher/console/wiki/Downloads}{ConsoleZ}
-with custom tabs which source different batch files to create
-different environments.  For the above, I use the following command to
-set up a custom OMERO tab:
-
-  \begin{semiverbatim}
-C:\\Windows\\System32\\cmd /k C:\\Users\\rleigh\\bin\\omeroenv.bat
-\end{semiverbatim}
-
-Note that the Ice setup is only required for running \cmd{build.py};
-it is optional for direct use of \cmd{cmake}.
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Building \pkg{gtest} on Windows}
-  \scriptsize
-  Download and unpack \pkg{gtest}, then run:
-
-  \begin{semiverbatim}
-> set CL=/D_VARIADIC_MAX=10
-> cd c:\\Users\\rleigh\\gtest-1.7.0
-> cmake -G "Visual Studio 11 2012 Win64" .
-> cmake --build .
-\end{semiverbatim}
-
-The \texttt{\_VARIADIC\_MAX=10} define works around a lack of
-variadic templates in this version of Visual Studio; may affect other
-Visual Studio versions.  Leave set for the remaining steps.
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Building OmeroCpp on Windows}
-  \scriptsize
-
-  Note: OmeroCpp building on Windows is a work in progress and not get
-  completely finished.
-
-  \bigskip
-  Note: starting from a \emph{clean} and up-to-date \emph{develop}
-  branch of \pkg{openmicroscopy.git} located in
-  \path{c:\Users\rleigh\openmicroscopy}.
-
-  \begin{semiverbatim}
-> mkdir c:\\Users\\rleigh\\ocppbuild
-> cd c:\\Users\\rleigh\\ocppbuild
-> cmake -G "Visual Studio 11 2012 Win64" \\
-  -DGTEST_ROOT=C:\\Users\\rleigh\\gtest-1.7.0 \\
-  -DGTEST_LIBRARY=C:\\Users\\rleigh\\gtest-1.7.0\\Debug\\gtest.lib \\
-  -DGTEST_MAIN_LIBRARY=C:\\Users\\rleigh\\gtest-1.7.0\\Debug\\gtest_main.lib \\
-  ..\\openmicroscopy
-> cmake --build .
-\end{semiverbatim}
-
-After running \cmd{cmake}, it's also possible to open the solution
-file in Visual Studio and build from inside the application.
-\end{frame}
 
 \appendix
 
