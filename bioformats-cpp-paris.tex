@@ -28,8 +28,18 @@
 \tableofcontents
 }
 
+\begin{frame}
+  \frametitle{Java and C++}
+  \begin{itemize}
+  \item \cmd{bf-itk-pipe} (pipe from C++ to JVM)
+  \item \cmd{JACE} (wrap all Java classes, embed JVM)
+  \item Bio-Formats-C++ (native C++ implementation)
+  \end{itemize}
+\end{frame}
+
 \section{Prerequisites}
 \subsection{Compiler and toolchain}
+
 \begin{frame}
   \frametitle{Default compilers}
   \begin{itemize}
@@ -38,8 +48,6 @@
   \item MacOS X: XCode (custom LLVM/\cmd{clang++})
   \item Windows: Visual Studio or Visual Studio Express (MSVC/\cmd{cl})
   \end{itemize}
-
-  Earlier versions of MacOS X used GCC 4.2.
 \end{frame}
 
 \subsection{Package installation}
@@ -290,7 +298,7 @@ Build and install the following by hand (for Bio-Formats):
   \end{itemize}
 \end{frame}
 
-\section{Building}
+\section{Building Bio-Formats}
 
 \subsection{cmake introduction}
 
@@ -341,7 +349,19 @@ Build and install the following by hand (for Bio-Formats):
   \end{block}
 \end{frame}
 
-\section{Examples}
+\section{Using Bio-Formats}
+
+\subsection{Documentation}
+
+\begin{frame}
+  \frametitle{Documentation}
+  \begin{itemize}
+  \item \href{http://www.openmicroscopy.org/site/support/bio-formats5.1/developers/index.html\#using-bio-formats-as-a-native-c-library}{(Documentation)}
+  \item \href{http://www.openmicroscopy.org/site/support/bio-formats5.1/developers/cpp/tutorial.html}{(Tutorial)}
+  \item \href{http://downloads.openmicroscopy.org/bio-formats-cpp/5.1.1/api/namespaces.html}{(Doxygen API reference)}
+  \end{itemize}
+\end{frame}
+
 \subsection{Bio-Formats on Unix}
 
 \begin{frame}[fragile]
@@ -354,7 +374,7 @@ Build and install the following by hand (for Bio-Formats):
   \begin{semiverbatim}
 % mkdir /tmp/bfbuild
 % cd /tmp/bfbuild
-% cmake -DGTEST_ROOT=/tmp/gtest /path/to/bioformats
+% /path/to/bioformats
 \end{semiverbatim}
 
   Show cache variables and advanced cache variables which may be used to customise the build:
@@ -417,6 +437,57 @@ By default, this will install into \opt{CMAKE\_INSTALL\_PREFIX} which
 will default to \path{/usr/local}.  Use \opt{DESTDIR} to install into
 an alternative prefixed location, which is useful for testing and
 packaging for release.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Reading an OME-TIFF}
+  \begin{lstlisting}
+OMETIFFReader reader;
+
+reader.setGroupFiles(true);
+reader.setId(filename);
+shared_ptr<MetadataStore> store = reader.getMetadataStore();
+
+for (dimension_size_type series = 0U; series < reader.getSeriesCount(); ++series) {
+  reader.setSeries(series);
+  for (dimension_size_type plane = 0U; plane < reader.getPlaneCount(); ++plane) {
+    VariantPixelBuffer pixels;
+    reader.openBytes(plane, pixels);
+  }
+}
+reader.close();
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Writing an OME-TIFF}
+  \begin{lstlisting}
+shared_ptr<MetadataRetrieve> retrieve;
+OMETIFFWriter writer;
+
+writer.setMetadataRetrieve(retrieve);
+writer.setInterleaved(interleaved);
+writer.setId(filename);
+
+for (dimension_size_type series = 0U; series < seriesCount; ++series) {
+  writer.setSeries(series);
+  for (dimension_size_type plane = 0U; plane < planeCount; ++plane) {
+    VariantPixelBuffer pixels;
+    writer.saveBytes(plane, pixels);
+  }
+}
+writer.close();
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tools for testing}
+  \begin{block}{\cmd{bf-test}}
+    \begin{itemize}
+      \item \cmd{info}
+      \item \cmd{view}
+    \end{itemize}
+  \end{block}
 \end{frame}
 
 \section{Future work}
