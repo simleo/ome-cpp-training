@@ -34,6 +34,20 @@
   \item \cmd{bf-itk-pipe} (pipe from C++ to JVM)
   \item \cmd{JACE} (wrap all Java classes, embed JVM)
   \item Bio-Formats-C++ (native C++ implementation)
+    \pause
+    \begin{itemize}
+    \item Reference C++ OME-TIFF implementation
+    \item OME-XML model objects
+    \item Metadata store
+    \item Reading
+    \item Writing
+    \end{itemize}
+    \pause
+  \item Initial uses:
+    \begin{itemize}
+    \item Image acquisition writing OME-TIFF
+    \item Image analysis reading OME-TIFF
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -65,154 +79,31 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{FreeBSD packages}
+  \frametitle{Required packages}
   \scriptsize
-  Run \cmd{pkg install} to install:
   \begin{columns}
     \begin{column}{.5\linewidth}
+      Libraries
       \begin{itemize}
-      \item[] \pkg{devel/boost-all}
-      \item[] \pkg{devel/binutils}
-      \item[] \pkg{devel/cmake}
-      \item[] \pkg{devel/doxygen}
-      \item[] \pkg{devel/git}
-      \item[] \pkg{devel/googletest}
-      \item[] \pkg{graphics/graphviz}
-      \item[] \pkg{graphics/tiff}
+      \item[] Boost
+      \item[] HDF5
+      \item[] PNG
+      \item[] TIFF
+      \item[] Xerces-C
       \end{itemize}
       \end{column}
     \begin{column}{.5\linewidth}
-    \begin{itemize}
-      \item[] \pkg{lang/python}
-      \item[] \pkg{lang/python27}
-      \item[] \pkg{print/texlive-full}
-      \item[] \pkg{science/hdf5}
-      \item[] \pkg{textproc/py-genshi}
-      \item[] \pkg{textproc/py-sphinx}
-      \item[] \pkg{textproc/xerces-c3}
+      Tools
+      \begin{itemize}
+      \item[] CMake
+      \item[] Doxygen + Graphviz
+      \item[] Git
+      \item[] Graphicsmagick
+      \item[] Python + genshi + sphinx
+      \item[] \TeX{}Live
     \end{itemize}
     \end{column}
   \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Debian and Ubuntu packages}
-  \scriptsize
-  Run \cmd{apt-get install} to install:
-  \begin{columns}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{build-essential}
-      \item[] \pkg{cmake}
-      \item[] \pkg{doxygen}
-      \item[] \pkg{git}
-      \item[] \pkg{graphviz}
-      \item[] \pkg{libboost-all-dev}
-      \item[] \pkg{libgtest-dev}
-      \item[] \pkg{libtiff5-dev}
-      \item[] \pkg{libxerces-c-dev}
-      \end{itemize}
-    \end{column}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{openjdk-7-jdk openjdk-7-jre}
-      \item[] \pkg{python python2.7}
-      \item[] \pkg{texlive-full}
-      \item[] \pkg{libhdf5-dev}
-      \item[] \pkg{python-genshi} (or use \cmd{pip})
-      \item[] \pkg{python-sphinx} (or use \cmd{pip})
-      \end{itemize}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{CentOS and RHEL packages}
-  \scriptsize
-  Run \cmd{yum groupinstall "Development Tools"}
-  \bigskip
-
-  Run \cmd{yum install} to install:
-  \begin{columns}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{boost-devel}
-      \item[] \pkg{cmake}
-      \item[] \pkg{doxygen}
-      \item[] \pkg{git}
-      \item[] \pkg{graphviz}
-      \item[] \pkg{gtest-devel}
-      \item[] \pkg{hdf5-devel}
-      \end{itemize}
-    \end{column}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{libtiff-devel}
-      \item[] \pkg{python-genshi} (or use \cmd{pip})
-      \item[] \pkg{python}
-      \item[] \pkg{texlive-full}
-      \item[] \pkg{xerces-c-devel}
-      \end{itemize}
-    \end{column}
-  \end{columns}
-
-  \bigskip
-  Install the following by hand:
-
-  \begin{itemize}
-  \item \TeX{}Live (via \cmd{install-tl})
-  \item \pkg{sphinx} (via \cmd{pip})
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{MacOS X homebrew packages}
-  \scriptsize
-  Install XCode and its command line tools
-  \bigskip
-
-  Run \cmd{brew install} to install:
-  \begin{columns}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{boost}
-      \item[] \pkg{cmake}
-      \item[] \pkg{doxygen}
-      \item[] \pkg{git}
-      \item[] \pkg{graphviz}
-      \end{itemize}
-    \end{column}
-    \begin{column}{.5\linewidth}
-      \begin{itemize}
-      \item[] \pkg{hdf5}
-      \item[] \pkg{libtiff}
-      \item[] \pkg{python}
-      \item[] \pkg{xerces-c}
-      \end{itemize}
-    \end{column}
-  \end{columns}
-\bigskip
-Install the following by hand:
-\begin{itemize}
-\item Google Test (\pkg{gtest}) from zip or subversion
-\item \TeX{}Live (via \cmd{install-tl} or Mac\TeX{})
-\item \pkg{sphinx} (via \cmd{pip})
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Windows installation (packages)}
-  Install the following by hand:
-\begin{itemize}
-\item CMake
-\item Doxygen and Graphviz
-\item Git (msysgit)
-\item \LaTeX{} (Mik\TeX{})
-\item Python (latest 2.7 from python.org; 64-bit recommended)
-\item \pkg{genshi}
-\item \pkg{sphinx}
-\item Visual Studio (2015, 2013, 2012 or 2010; any edition)
-\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -222,10 +113,6 @@ For python, either download separate installers for each packages, or
 install \pkg{setuptools} and \pkg{pip} for Python, then \cmd{pip
   install} needed packages; ensure any downloaded packages are 64-bit
 if using 64-bit python)
-\bigskip
-
-Download and build \pkg{gtest} using \cmd{cmake} (no installation
-required)
 \bigskip
 
 Build and install the following by hand (for Bio-Formats):
@@ -246,23 +133,6 @@ Build and install the following by hand (for Bio-Formats):
     \end{column}
   \end{columns}
 …and possibly more—we haven't yet done a Bio-Formats C++ build on Windows.
-\end{frame}
-
-\subsection{Obtaining packages}
-
-\begin{frame}
-  \frametitle{Obtaining packages by hand}
-  \scriptsize
-  \begin{itemize}
-  \item Google Test \dotfill \href{https://code.google.com/p/googletest/}{(website)} \href{https://code.google.com/p/googletest/downloads/detail?name=gtest-1.7.0.zip}{(download zip)} \href{http://googletest.googlecode.com/svn/tags/release-1.7.0}{(svn tag)}
-  \item CMake \dotfill \href{http://cmake.org/}{(website)} \href{http://cmake.org/cmake/resources/software.html}{(download)}
-  \item Visual Studio \dotfill \href{https://www.visualstudio.com/en-us/downloads/visual-studio-2015-downloads-vs.aspx}{(2015RC Community Edition download)}
-  \item Git \dotfill \href{http://www.git-scm.com/}{(website)} \href{http://www.git-scm.com/downloads}{(download)}
-  \item Python \dotfill \href{https://www.python.org/}{(website)} \href{https://www.python.org/download/releases/2.7.8/}{(download)} \href{http://www.lfd.uci.edu/\~gohlke/pythonlibs/}{(extra packages)}
-  \item \LaTeX{} \dotfill \href{https://www.tug.org/texlive/}{(\TeX{}Live)} \href{https://www.tug.org/texlive/quickinstall.html}{(\TeX{}Live install)} \href{http://www.miktex.org/}{(Mik\TeX{} website)} \href{http://www.miktex.org/download}{(Mik\TeX{} download)}
-  \item Doxygen \dotfill \href{http://www.stack.nl/\~dimitri/doxygen/}{(website)} \href{http://www.stack.nl/\~dimitri/doxygen/download.html}{(download)}
-  \item Graphviz \dotfill \href{http://graphviz.org/}{(website)} \href{http://graphviz.org/Download\_windows.php}{(download)}
-  \end{itemize}
 \end{frame}
 
 \subsection{Configuration}
@@ -341,7 +211,6 @@ Build and install the following by hand (for Bio-Formats):
   \begin{block}{Building Bio-Formats on MacOS X}
     \begin{itemize}
       \item Running cmake
-      \item Cache variables
       \item Building
       \item Testing
       \item Installing
@@ -351,11 +220,12 @@ Build and install the following by hand (for Bio-Formats):
 
 \section{Using Bio-Formats}
 
-\subsection{Documentation}
+\subsection{Downloading}
 
 \begin{frame}
-  \frametitle{Documentation}
+  \frametitle{Source and documentation downloads}
   \begin{itemize}
+  \item \href{http://downloads.openmicroscopy.org/bio-formats-cpp/}{(Download source)}
   \item \href{http://www.openmicroscopy.org/site/support/bio-formats5.1/developers/index.html\#using-bio-formats-as-a-native-c-library}{(Documentation)}
   \item \href{http://www.openmicroscopy.org/site/support/bio-formats5.1/developers/cpp/tutorial.html}{(Tutorial)}
   \item \href{http://downloads.openmicroscopy.org/bio-formats-cpp/5.1.1/api/namespaces.html}{(Doxygen API reference)}
@@ -377,25 +247,11 @@ Build and install the following by hand (for Bio-Formats):
 % /path/to/bioformats
 \end{semiverbatim}
 
-  Show cache variables and advanced cache variables which may be used to customise the build:
-
-  \begin{semiverbatim}
-% cmake -LH
-% cmake -LAH
-\end{semiverbatim}
-
 Run the build with either of:
 
   \begin{semiverbatim}
 % make [VERBOSE=1]
 % cmake --build .
-\end{semiverbatim}
-
-Build the API reference documentation with either of:
-
-  \begin{semiverbatim}
-% make doc
-% cmake --build . --target doc
 \end{semiverbatim}
 \end{frame}
 
@@ -417,10 +273,6 @@ Individual tests may be run by hand:
 % cpp/test/ome-bioformats/pixelbuffer
 % cpp/test/ome-bioformats/pixelbuffer --gtest_help
 \end{semiverbatim}
-
-Use \opt{--gtest\_help} to list test options.  Useful when debugging
-to run specific tests or subsets of the tests.
-\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Building Bio-Formats on U\textsc{nix} (3)}
