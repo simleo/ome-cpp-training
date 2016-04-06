@@ -7,13 +7,13 @@
 
 \include{common}
 \usepackage{tikz}
-\usetikzlibrary{matrix}
+\usetikzlibrary{arrows.meta,calc,decorations.markings,matrix,bending}
 
 \newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
 
-\title{Multi-dimensional \abox{A}\abox{r}\abox{r}\abox{a}\abox{y}\abox{s}}
+\title{Multi-dimensional Arrays}
 \author{Roger Leigh}
-\date{Feb 2016}
+\date{April 2016}
 
 \begin{document}
 
@@ -21,7 +21,6 @@
   \titlepage
   \begin{center}
 
-      \bfseries
     \begin{tikzpicture}
       \matrix(m)[column sep=0pt,every node/.style={inner sep=1.5ex,text depth=0.5ex,text height=1.5ex,anchor=center}]
               {
@@ -48,28 +47,199 @@
 \tableofcontents
 }
 
-\begin{frame}
-  \frametitle{Java and C++}
-  \begin{itemize}
-  \item \cmd{bf-itk-pipe} (pipe from C++ to JVM)
-  \item \cmd{JACE} (wrap all Java classes, embed JVM)
-    \pause
-  \item Bio-Formats-C++ (native C++ implementation)
-    \begin{itemize}
-    \item OME-TIFF \textbf{Reference implementation}
-    \item OME-XML model objects
-    \item Metadata store
-    \item Reading
-    \item Writing
-    \end{itemize}
-    \pause
-  \item Initial uses:
-    \begin{itemize}
-    \item \textbf{Image acquisition} writing OME-TIFF
-    \item \textbf{Image analysis} reading OME-TIFF
-    \end{itemize}
-  \end{itemize}
+\begin{frame}[fragile]
+  \frametitle{Addressing: One dimension}
+
+  \begin{center}
+
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,0) rectangle (\x+1,1);
+    \draw[black,very thick] (0,0) rectangle (6,1);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 0.5) node[black!50!blue] {\x};
+    \draw (0, 0.5) node[anchor=east,black!50!blue] {Index};
+
+    \onslide<2->{
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,1) rectangle (\x+1,2);
+    \draw[black,very thick] (0,1) rectangle (6,2);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 1.5) node[black!50!green] {\x};
+    \draw (0, 1.5) node[anchor=east,black!50!green] {Offset};
+    }
+    \onslide<3->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (0.5,2.6) -- (0.5,2);   
+    \draw (0.5,2.5) node[anchor=north, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (3.5,2) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (4,2.5) node[anchor=north, black!30!red] {stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<4->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index} \cdot \mathrm{stride})
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{Index}
+  \end{equation*}
+  }
+  \end{center}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: One dimension (reversed)}
+  
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,0) rectangle (\x+1,1);
+    \draw[black,very thick] (0,0) rectangle (6,1);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 0.5) node[black!50!blue] {\x};
+    \draw (0, 0.5) node[anchor=east,black!50!blue] {Index};
+
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,1) rectangle (\x+1,2);
+    \draw[black,very thick] (0,1) rectangle (6,2);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[black!50!green] node at (\x+0.5, 1.5) {%
+    \pgfmathparse{5-\x}%
+    \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+    };
+    \draw (0, 1.5) node[anchor=east,black!50!green] {Offset};
+
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (5.5,2.6) -- (5.5,2);   
+    \draw (5.5,2.5) node[anchor=north, black!30!red] {base=5};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (2.5,2) arc[radius=0.5, start angle=-360, end angle=-180];
+    \draw (2,2.5) node[anchor=north, black!30!red] {stride=-1};
+  \end{tikzpicture}
+
+  \onslide<2->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index} \cdot \mathrm{stride})
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 5 + (\mathrm{Index} \cdot -1)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 5 - \mathrm{Index}
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (row-major)}
+
+  \begin{center}
+
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \onslide<2->{
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{\x+(5*\y)}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+    }
+    \onslide<3->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (0.5,3) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (1,3.5) node[anchor=north, black!30!red] {x stride=1};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=5};
+    }
+  \end{tikzpicture}
+
+  \onslide<4->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{Index}_x + (\mathrm{Index}_y \cdot 5)
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (column-major)}
+
+  \begin{center}
+
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{(\x*3)+\y}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+
+    \onslide<2->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (0.5,3) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (1,3.5) node[anchor=north, black!30!red] {x stride=3};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<3->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = (\mathrm{Index}_x \cdot 3) + \mathrm{Index}_y
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
 
 \section{Prerequisites}
 
