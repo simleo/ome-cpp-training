@@ -1,0 +1,116 @@
+\documentclass{beamer}
+
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
+
+\include{common}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+\newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\title{Multi-dimensional \abox{A}\abox{r}\abox{r}\abox{a}\abox{y}\abox{s}}
+\author{Roger Leigh}
+\date{Feb 2016}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+  \titlepage
+  \begin{center}
+
+      \bfseries
+    \begin{tikzpicture}
+      \matrix(m)[column sep=0pt,every node/.style={inner sep=1.5ex,text depth=0.5ex,text height=1.5ex,anchor=center}]
+              {
+                \node(m0) {a}; & \node(m1) {r}; & \node(m2) {r}; & \node(m3) {a}; & \node(m4) {y}; & \node(m5) {s}; \\
+              };
+              \draw[thick](m0.north west)--(m5.north east);
+              \draw[thick](m0.south west)--(m5.south east);
+              \draw[thick](m0.north west)--(m0.south west);
+              \draw[thick](m0.north east)--(m0.south east);
+              \draw[thick](m1.north east)--(m1.south east);
+              \draw[thick](m2.north east)--(m2.south east);
+              \draw[thick](m3.north east)--(m3.south east);
+              \draw[thick](m4.north east)--(m4.south east);
+              \draw[thick](m5.north east)--(m5.south east);
+
+    \end{tikzpicture}
+\\
+  \end{center}
+\end{frame}
+
+\section[]{Overview}
+\frame{
+\frametitle{Overview}
+\tableofcontents
+}
+
+\begin{frame}
+  \frametitle{Java and C++}
+  \begin{itemize}
+  \item \cmd{bf-itk-pipe} (pipe from C++ to JVM)
+  \item \cmd{JACE} (wrap all Java classes, embed JVM)
+    \pause
+  \item Bio-Formats-C++ (native C++ implementation)
+    \begin{itemize}
+    \item OME-TIFF \textbf{Reference implementation}
+    \item OME-XML model objects
+    \item Metadata store
+    \item Reading
+    \item Writing
+    \end{itemize}
+    \pause
+  \item Initial uses:
+    \begin{itemize}
+    \item \textbf{Image acquisition} writing OME-TIFF
+    \item \textbf{Image analysis} reading OME-TIFF
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\section{Prerequisites}
+
+
+\appendix
+
+\section[]{Acknowledgements}
+
+\frame{
+  \frametitle{Acknowledgements}
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item OME Team, Dundee
+      \begin{itemize}
+      \item Jason Swedlow
+      \item Jean-Marie Burel
+      \item Mark Carroll
+      \item Andrew Patterson
+      \item …and the rest of the team
+      \end{itemize}
+    \end{itemize}
+  }
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item Micron, Oxford
+      \begin{itemize}
+      \item Douglas Russell
+      \end{itemize}
+    \item Glencoe Software
+      \begin{itemize}
+      \item Melissa Linkert
+      \item Josh Moore
+      \end{itemize}
+    \end{itemize}
+  }
+
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+  \end{center}
+}
+
+\end{document}
