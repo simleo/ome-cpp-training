@@ -25,23 +25,22 @@
   {\end{tabular}\par\vspace{\belowdisplayskip}}
 
 \title{Multi-dimensional Arrays}
-\author{Roger Leigh}
+\author{{Roger Leigh}
 \date{April 2016}
 
 \begin{document}
 
 \begin{frame}[plain,fragile]
-  \titlepage
-  \begin{center}
-
-    \begin{tikzpicture}[x=1mm,y=-1mm]
-      \pgfmathsetmacro\ax{cos(33)*0.8}
-      \pgfmathsetmacro\bx{cos(67)*0.8}
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[minimum width=\paperwidth, minimum height=\paperheight, anchor=north west,remember picture,overlay] (a) {
+      \begin{tikzpicture}[x=1mm,y=-1mm]
+        \pgfmathsetmacro\ax{cos(33)*0.8}
+        \pgfmathsetmacro\bx{cos(67)*0.8}
 
       \foreach \col in {0, 1, 2, 3, 4, 5} {
-        \foreach \row in {0, 1, 2, 3} {
-          \pgfmathsetmacro\acx{\row+(((\ax*10)+11+\row)*\col)}
-          \pgfmathsetmacro\acy{((\bx*10)+11+\col)*\row}
+        \foreach \row in {0, 1, 2, 3, 4} {
+          \pgfmathsetmacro\acx{\row-20+(((\ax*10)+11+\row)*\col)}
+          \pgfmathsetmacro\acy{30-((\bx*10)+11+\col)*\row}
 
           \foreach \x in {0,1,2,3,4,5,6,7,8,9,10} {
             \draw [thin, red] (10+\acx+\x, 10+\acy) -- (10+\acx+\x,20+\acy);   
@@ -54,9 +53,12 @@
             \draw [thin, blue] ({10+\acx+(\ax*\x)}, {10+\acy-(\bx*\x)}) -- ({10+\acx+10+(\ax * \x)}, {10+\acy-(\bx*\x)});   
           }
         }
-      }
+      };
     \end{tikzpicture}
-\\
+      };
+    \end{tikzpicture}
+  \titlepage
+  \begin{center}
   \end{center}
 \end{frame}
 
