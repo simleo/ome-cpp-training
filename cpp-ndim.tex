@@ -6,10 +6,15 @@
 \newcommand{\opt}[1]{\textsl{#1}}
 
 \include{common}
+\usepackage{array}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,calc,decorations.markings,matrix,bending}
 
 \newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
 
 \title{Multi-dimensional Arrays}
 \author{Roger Leigh}
@@ -240,6 +245,172 @@
   \end{center}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (column-major, yx order)}
+
+  \begin{center}
+
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{12+(\x*-3)+\y}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+
+    \onslide<2->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=12};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (4.5,3) arc[radius=0.5, start angle=-360, end angle=-180];
+    \draw (4,3.5) node[anchor=north, black!30!red] {x stride=-3};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<3->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 12 + (\mathrm{Index}_x \cdot -3) + \mathrm{Index}_y
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Logical addressing}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+    \end{conditions}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = \sum\limits_{i=0}^{n-1} (S_i \cdot C_i)
+    \end{equation*}
+    \end{block}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:
+      \begin{equation*}
+        C_i = \frac{I}{S_i}
+      \end{equation*}
+
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Storage addressing}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      E & Dimension extent \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+      O & Base offset \\
+    \end{conditions}
+    \end{block}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = O + \sum\limits_{i=0}^{n-1} (S_i \cdot C_i)
+    \end{equation*}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:
+      If ascending:
+      \begin{equation*}
+        C_i = \frac{I}{S_i}
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+      If descending:
+      \begin{equation*}
+        C_i = \frac{(E_i \cdot \lvert S_i \rvert) - S_i - 1}{\lvert S_i \rvert}
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} \lvert S_i \rvert
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Storage addressing with subranges}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      E & Dimension extent \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+      O & Base offset \\
+      B & Subrange start offset \\
+    \end{conditions}
+    \end{block}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = O + \sum\limits_{i=0}^{n-1} (S_i \cdot (C_i + B_i))
+    \end{equation*}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:
+      If ascending:
+      \begin{equation*}
+        C_i = \frac{I}{S_i} - B_i
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+      If descending:
+      \begin{equation*}
+        C_i = \frac{(E_i \cdot \lvert S_i \rvert) - S_i - 1}{\lvert S_i \rvert} - B_i
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} \lvert S_i \rvert
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
 
 \section{Prerequisites}
 
