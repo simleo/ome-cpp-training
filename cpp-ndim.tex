@@ -12,6 +12,14 @@
 
 \newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
 
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\program}[1]{\texttt{#1}}
+\newcommand{\variable}[1]{\textsl{#1}}
+\newcommand{\class}[1]{\texttt{#1}}
+\newcommand{\function}[1]{\texttt{#1()}}
+\newcommand{\type}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
 \newenvironment{conditions}
   {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
   {\end{tabular}\par\vspace{\belowdisplayskip}}
@@ -26,21 +34,27 @@
   \titlepage
   \begin{center}
 
-    \begin{tikzpicture}
-      \matrix(m)[column sep=0pt,every node/.style={inner sep=1.5ex,text depth=0.5ex,text height=1.5ex,anchor=center}]
-              {
-                \node(m0) {a}; & \node(m1) {r}; & \node(m2) {r}; & \node(m3) {a}; & \node(m4) {y}; & \node(m5) {s}; \\
-              };
-              \draw[thick](m0.north west)--(m5.north east);
-              \draw[thick](m0.south west)--(m5.south east);
-              \draw[thick](m0.north west)--(m0.south west);
-              \draw[thick](m0.north east)--(m0.south east);
-              \draw[thick](m1.north east)--(m1.south east);
-              \draw[thick](m2.north east)--(m2.south east);
-              \draw[thick](m3.north east)--(m3.south east);
-              \draw[thick](m4.north east)--(m4.south east);
-              \draw[thick](m5.north east)--(m5.south east);
+    \begin{tikzpicture}[x=1mm,y=-1mm]
+      \pgfmathsetmacro\ax{cos(33)*0.8}
+      \pgfmathsetmacro\bx{cos(67)*0.8}
 
+      \foreach \col in {0, 1, 2, 3, 4, 5} {
+        \foreach \row in {0, 1, 2, 3} {
+          \pgfmathsetmacro\acx{\row+(((\ax*10)+11+\row)*\col)}
+          \pgfmathsetmacro\acy{((\bx*10)+11+\col)*\row}
+
+          \foreach \x in {0,1,2,3,4,5,6,7,8,9,10} {
+            \draw [thin, red] (10+\acx+\x, 10+\acy) -- (10+\acx+\x,20+\acy);   
+            \draw [thin, green] (10+\acx, 10+\acy+\x) -- (20+\acx,10+\acy+\x);   
+
+            \draw [thin, green] (20+\acx,10+\acy+\x) -- ({20+\acx+(\ax * 10)},{10+\acy+\x-(\bx * 10)});   
+            \draw [thin, blue] ({20+\acx+(\ax*\x)},{10+\acy-(\bx*\x)}) -- ({20+\acx+(\ax*\x)},{10+\acy+10-(\bx * \x)});   
+
+            \draw [thin, red] (10+\acx+\x,10+\acy) -- ({10+\acx+\x+(\ax * 10)}, {10+\acy-(\bx * 10)});   
+            \draw [thin, blue] ({10+\acx+(\ax*\x)}, {10+\acy-(\bx*\x)}) -- ({10+\acx+10+(\ax * \x)}, {10+\acy-(\bx*\x)});   
+          }
+        }
+      }
     \end{tikzpicture}
 \\
   \end{center}
@@ -51,6 +65,111 @@
 \frametitle{Overview}
 \tableofcontents
 }
+
+\section{Basic array calculations}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Image index}
+    \begin{itemize}
+    \item Plane number for desired ZTC coordinate
+    \item Requires calculation by caller
+    \item Exposes internal implementation details of file format and/or reader
+    \item May not be real if file format is not planar
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (4.8,2.6) ellipse (0.75 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,4.1) -- (4.2,2.7);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Pixel buffer}
+    \begin{itemize}
+    \item Raw byte array
+    \item No pixel type
+    \item No dimension sizes and order
+    \item No padding information
+    \item Difficult to process or delegate to other code
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (5.15,2.95) ellipse (1.1 cm and 0.3 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,4.1) -- (4.15,3.05);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Starting coordinates and extents}
+    \begin{itemize}
+    \item Separate parameter for every dimension coordinate
+    \item Separate parameter for every dimension extent
+    \item No means of using a range rather than an extent
+    \item Limited to specifying regions on a 2D plane
+    \item No generality
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (5.4,3.32) ellipse (1.3 cm and 0.25 cm);
+        \draw [very thick, black!30!red] (8.05,3.32) ellipse (1.3 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (3.5,4.1) -- (4.25,3.4);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (6.25,4.1) -- (6.95,3.4);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Generalised nD API (proposed)}
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList coords
+                          ExtentList     extents);
+  \end{lstlisting}
+  or
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList start
+                          CoordinateList end);
+  \end{lstlisting}
+  \begin{block}{Pixel buffer}
+    \begin{itemize}
+    \item \class{PixelBuffer} provides typed pixel data, with extent sizes
+    \item \class{CoordinateList} is the set of indexes into each dimension
+    \item \class{ExtentList} is the extent in each dimension
+    \item No plane number needed; the coordinate and extent lists
+      determine the plane(s) to fetch
+    \end{itemize}
+  \end{block}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Addressing: One dimension}
@@ -95,7 +214,6 @@
 
 \begin{frame}[fragile]
   \frametitle{Addressing: One dimension (reversed)}
-  
   \begin{center}
   \begin{tikzpicture}[y=-1cm]
     \foreach \x in {0,1,2,3,4,5}
@@ -138,9 +256,7 @@
 
 \begin{frame}[fragile]
   \frametitle{Addressing: Two dimensions (row-major)}
-
   \begin{center}
-
   \begin{tikzpicture}[y=-1cm]
     \foreach \x in {0,1,2,3,4}
       \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
@@ -193,9 +309,7 @@
 
 \begin{frame}[fragile]
   \frametitle{Addressing: Two dimensions (column-major)}
-
   \begin{center}
-
   \begin{tikzpicture}[y=-1cm]
     \foreach \x in {0,1,2,3,4}
       \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
@@ -247,9 +361,7 @@
 
 \begin{frame}[fragile]
   \frametitle{Addressing: Two dimensions (column-major, yx order)}
-
   \begin{center}
-
   \begin{tikzpicture}[y=-1cm]
     \foreach \x in {0,1,2,3,4}
       \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
@@ -373,7 +485,7 @@
 
 \begin{frame}
   \frametitle{Storage addressing with subranges}
-  \begin{columns}[c]
+  \begin{columns}
     \column{.5\textwidth}
     \begin{block}{Terms}
     \begin{conditions}
@@ -393,7 +505,7 @@
     \end{block}
     \column{.5\textwidth}
     \begin{block}{Logical coordinate from linear index}
-      For each dimension $i$:
+      For each dimension $i$:\\ \noindent
       If ascending:
       \begin{equation*}
         C_i = \frac{I}{S_i} - B_i
@@ -412,8 +524,76 @@
   \end{columns}
 \end{frame}
 
-\section{Prerequisites}
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+  \begin{lstlisting}[language=Java]
+int
+getIndex(String order,
+         int zSize, int cSize, int tSize, int num,
+         int z, int c, int t)
+  \end{lstlisting}
+  Compute Z, C and T coordinates from an index:
+  \begin{lstlisting}[language=Java]
+int[]
+getZCTCoords(String order,
+             int zSize, int cSize, int tSize, int num,
+             int index);
+  \end{lstlisting}
+  \begin{itemize}
+  \item Limited to three fixed dimensions
+  \item Implementation is inefficient (string parsing and validity checks)
+  \end{itemize}
+  \end{block}
+\end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Generalised nD API (proposed for C++)}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+  \begin{lstlisting}[language=C++]
+index_type
+storage_index(const coord_type& coord) const
+{
+  difference_type pos = _base;
+
+  for (std::vector<Dimension>::size_type d = 0; d < size(); ++d)
+    {
+      const Dimension& dim(dimension(d));
+      const DimensionStorageDetail& detail = _detail.at(d);
+      pos += detail.stride * (coord.at(d) + dim.begin);
+    }
+
+  return pos;
+}
+  \end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Generalised nD API (Imglib2)}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+    \begin{lstlisting}[language=Java]
+int positionWithOffsetToIndex(final int[] position,
+                              final int[] dimensions,
+                              final int[] offsets)
+{
+  final int maxDim = dimensions.length - 1;
+  int i = position[ maxDim ] - offsets[ maxDim ];
+  for ( int d = maxDim - 1; d >= 0; --d )
+    i = i * dimensions[ d ] + position[ d ] - offsets[ d ];
+  return i;
+}
+    \end{lstlisting}
+    \begin{itemize}
+    \item Avoids stride calculations by iterating backward
+    \item Does not cater for reverse progression
+    \end{itemize}
+  See \filename{util/IntervalIndexer.java}
+  \end{block}
+\end{frame}
 
 \appendix
 
