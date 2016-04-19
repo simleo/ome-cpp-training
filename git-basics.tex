@@ -1,0 +1,73 @@
+\documentclass{beamer}
+
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
+
+\include{common}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage{ragged2e}
+
+\newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\title{Using the \texttt{git} version control system}
+\author{Roger Leigh}
+\date{22\textsuperscript{nd} April 2013}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+  \titlepage
+
+  \begin{center}
+  \textsl{I'm an egotistical bastard, and I name all my projects after myself. First `Linux', now `Git'}\hspace{2cm}---Linus Torvalds
+  \end{center}
+\end{frame}
+
+\section[]{Overview}
+\frame{
+\frametitle{Overview}
+\tableofcontents
+}
+
+
+\section[]{Acknowledgements}
+
+\frame{
+  \frametitle{Acknowledgements}
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item OME Team, Dundee
+      \begin{itemize}
+      \item Jason Swedlow
+      \item Jean-Marie Burel
+      \item Mark Carroll
+      \item Andrew Patterson
+      \item …and the rest of the team
+      \end{itemize}
+    \end{itemize}
+  }
+  \parbox[t]{0.45\textwidth}{
+    \begin{itemize}
+    \item Micron, Oxford
+      \begin{itemize}
+      \item Douglas Russell
+      \end{itemize}
+    \item Glencoe Software
+      \begin{itemize}
+      \item Melissa Linkert
+      \item Josh Moore
+      \end{itemize}
+    \end{itemize}
+  }
+
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+  \end{center}
+}
+
+\end{document}
