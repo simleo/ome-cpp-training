@@ -10,6 +10,10 @@
 \usetikzlibrary{matrix}
 \usepackage{ragged2e}
 
+\tikzstyle{head} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{commit} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
 \newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
 
 \title{Using the \texttt{git} version control system}
@@ -32,6 +36,48 @@
 \tableofcontents
 }
 
+\begin{frame}[fragile]
+  \frametitle{Revisions}
+
+  \begin{center}
+    \begin{tikzpicture}[y=-1cm]
+
+      \onslide<1->{
+        \node (rev1) [commit] {Rev 1};
+        \node (rev2) [commit, right of=rev1, xshift=2cm] {Rev 2};
+      }
+      \onslide<2->{
+        \node (rev3) [commit, right of=rev2, xshift=2cm] {Rev 3};
+        \node (rev4) [commit, right of=rev3, xshift=2cm] {Rev 4};
+      }
+      \onslide<1-2>{
+        \draw [arrow] (rev1) -- (rev2);
+      }
+      \onslide<2>{
+      \draw [arrow] (rev2) -- (rev3);
+      \draw [arrow] (rev3) -- (rev4);
+      }
+      \onslide<3->{
+        \path[arrow] (rev1) edge [bend left=45] node[anchor=south] {$\Delta_{1\rightarrow{}2}$} (rev2);
+        \path[arrow] (rev2) edge [bend left=45] node[anchor=south] {$\Delta_{2\rightarrow{}3}$} (rev3);
+        \path[arrow] (rev3) edge [bend left=45] node[anchor=south] {$\Delta_{3\rightarrow{}4}$} (rev4);
+      }
+      \onslide<4->{
+        \path[arrow] (rev2) edge [bend left=45] node[anchor=north] {$-\Delta_{1\rightarrow{}2}$} (rev1);
+        \path[arrow] (rev3) edge [bend left=45] node[anchor=north] {$-\Delta_{2\rightarrow{}3}$} (rev2);
+        \path[arrow] (rev4) edge [bend left=45] node[anchor=north] {$-\Delta_{3\rightarrow{}4}$} (rev3);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Computing and applying deltas (diffs)}
+  \begin{description}
+  \item[\texttt{diff}] Compute the difference between two revisions (two collections of files)
+    \item[\texttt{patch}] Transform one revision to another by applying a diff
+    \end{description}
+\end{frame}
 
 \section[]{Acknowledgements}
 
