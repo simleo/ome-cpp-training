@@ -11,8 +11,11 @@
 \usepackage{ragged2e}
 
 \tikzstyle{head} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
-\tikzstyle{commit} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{commit} = [rectangle, minimum width=1cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{repo} = [rectangle, minimum width=2cm, minimum height=1cm, text width=2cm, text centered, draw=black, fill=orange!30]
+
 \tikzstyle{arrow} = [thick,->,>=stealth]
+\tikzstyle{darrow} = [thick,<->,>=stealth]
 
 \newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
 
@@ -79,36 +82,112 @@
     \end{description}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Branches}
+
+  \begin{center}
+    \begin{tikzpicture}[y=-1cm]
+
+      \onslide<1->{
+        \node (rev1) [commit] {1};
+        \node (rev2) [commit, right of=rev1, xshift=1cm] {2};
+        \draw [arrow] (rev1) -- (rev2);
+      }
+      \onslide<2->{
+        \node (rev3) [commit, right of=rev2, xshift=1cm] {3};
+        \node (rev11) [commit, below of=rev3, yshift=-2cm] {f1};
+        \draw [arrow] (rev2) -- (rev3);
+        \path[arrow] (rev2) edge [bend right=20] node[anchor=north east] {branch} (rev11);
+      }
+      \onslide<3->{
+        \node (rev4) [commit, right of=rev3, xshift=1cm] {4};
+        \node (rev5) [commit, right of=rev4, xshift=1cm] {5};
+        \node (rev12) [commit, right of=rev11, xshift=2cm] {f2};
+
+        \draw [arrow] (rev3) -- (rev4);
+        \draw [arrow] (rev4) -- (rev5);
+        \draw [arrow] (rev11) -- (rev12);
+
+      }
+      \onslide<4->{
+        \node (rev6) [commit, right of=rev5, xshift=1cm] {6};
+        \draw [arrow] (rev5) -- (rev6);
+        \path[arrow] (rev12) edge [bend right=20] node[anchor=north west] {merge} (rev6);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{repository relationships (traditional client-server)}
+
+  \begin{center}
+    \begin{tikzpicture}
+
+      \onslide<1->{
+        \node (remote) [repo] {Remote repository};
+      }
+      \onslide<2->{
+        \node (local2) [repo, below of=remote, yshift=-2cm] {Local checkout};
+        \node (local1) [repo, right of=local2, xshift=2cm] {Local checkout};
+        \node (local3) [repo, left of=local2, xshift=-2cm] {Local checkout};
+        \draw [darrow] (remote) -- (local1);
+        \draw [darrow] (remote) -- (local2);
+        \draw [darrow] (remote) -- (local3);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{repository relationships (git/distributed)}
+
+  \begin{center}
+    \begin{tikzpicture}
+
+      \onslide<1->{
+        \node (local) [repo] {Local repository};
+      }
+      \onslide<2->{
+        \node (workdir) [repo, left of=local, xshift=-2cm] {Working directory};
+        \draw [arrow] (local) -- (workdir);
+      }
+      \onslide<3->{
+        \node (remote2) [repo, right of=local, xshift=2cm] {Remote repository};
+        \node (remote1) [repo, above of=remote2, yshift=1cm] {Remote repository};
+        \node (remote3) [repo, below of=remote2, yshift=-1cm] {Remote repository};
+        \draw [darrow] (local) -- (remote1);
+        \draw [arrow] (remote2) -- (local);
+        \draw [arrow] (remote3) -- (local);
+      }
+      \onslide<4->{
+        \node (index) [repo, below right of=workdir, yshift=-2cm] {Index (staging)};
+        \draw [darrow] (workdir) -- (index);
+      }
+      \onslide<5->{
+        \node (stash) [repo, left of=index, xshift=-2cm] {Stash};
+        \draw [darrow] (workdir) -- (stash);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Object store types}
+
+  \begin{description}
+  \item[blob] Raw file content; referenced by SHA1 hash
+  \item[tree] Directory, containing blobs and nested trees; referenced by SHA1 hash
+  \item[commit] Change set, containing tree hash, parent hash, author+committer, description; referenced by SHA1 hash
+  \item[tag] Label for a commit, containing commit hash and description; referenced by name
+  \item[ref] Branch name, pointing to a commit hash; referenced by name
+  \end{description}
+\end{frame}
+
 \section[]{Acknowledgements}
 
 \frame{
   \frametitle{Acknowledgements}
-  \parbox[t]{0.45\textwidth}{
-    \begin{itemize}
-    \item OME Team, Dundee
-      \begin{itemize}
-      \item Jason Swedlow
-      \item Jean-Marie Burel
-      \item Mark Carroll
-      \item Andrew Patterson
-      \item …and the rest of the team
-      \end{itemize}
-    \end{itemize}
-  }
-  \parbox[t]{0.45\textwidth}{
-    \begin{itemize}
-    \item Micron, Oxford
-      \begin{itemize}
-      \item Douglas Russell
-      \end{itemize}
-    \item Glencoe Software
-      \begin{itemize}
-      \item Melissa Linkert
-      \item Josh Moore
-      \end{itemize}
-    \end{itemize}
-  }
-
   \begin{center}
     \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
     \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
