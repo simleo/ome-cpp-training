@@ -25,7 +25,7 @@
   {\end{tabular}\par\vspace{\belowdisplayskip}}
 
 \title{Multi-dimensional Arrays}
-\author{{Roger Leigh}
+\author{Roger Leigh}
 \date{April 2016}
 
 \begin{document}
@@ -67,6 +67,64 @@
 \frametitle{Overview}
 \tableofcontents
 }
+
+\begin{frame}
+  \frametitle{History}
+  \begin{itemize}
+  \item \href{https://trac.openmicroscopy.org/ome/ticket/3523}{Trac ticket 3523}
+  \item \href{http://www.openmicroscopy.org/site/community/minutes/meetings/june-2010-paris-users-meeting/meeting-notes}{2010 Paris User's meeting}
+  \item Also considered in earlier meetings back to at least 2008
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Current model}
+  \begin{itemize}
+  \item Data model \texttt{DimensionOrder}: X Y Z T C
+    \begin{itemize}
+      \item \texttt{XYZTC}
+      \item \texttt{XYZCT}
+      \item \texttt{XYTZC}
+      \item \texttt{XYTCX}
+      \item \texttt{XYCZT}
+      \item \texttt{XYCTZ}
+    \end{itemize}
+    \pause
+  \item Also subchannel/samples
+  \item Extra ``dimensions'' hacked in with Modulo
+  \item XY always ordered first
+  \item Enumeration can't scale
+  \item Fundamentally limited
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Describing a dimension}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Core metadata}
+      \begin{itemize}
+      \item extent (size)
+        \pause
+      \item order (logical)
+        \pause
+      \item order (storage)
+      \item direction (storage)
+      \end{itemize}
+    \end{block}
+    \column{.5\textwidth}
+    \pause
+    \begin{block}{Extended metadata}
+      \begin{itemize}
+      \item dimension type
+      \item unit type e.g. physical size unit
+      \item unit value range e.g. physical size
+      \item labels
+      \item ... essentially some of the Modulo metadata
+      \end{itemize}
+    \end{block}
+  \end{columns}
+\end{frame}
 
 \section{Basic array calculations}
 
@@ -147,30 +205,6 @@ byte[] openBytes(int no,
       \end{tikzpicture}
     };
   \end{tikzpicture}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Generalised nD API (proposed)}
-  \begin{lstlisting}[language=Java]
-    PixelBuffer getPixels(PixelBuffer    buf,
-                          CoordinateList coords
-                          ExtentList     extents);
-  \end{lstlisting}
-  or
-  \begin{lstlisting}[language=Java]
-    PixelBuffer getPixels(PixelBuffer    buf,
-                          CoordinateList start
-                          CoordinateList end);
-  \end{lstlisting}
-  \begin{block}{Pixel buffer}
-    \begin{itemize}
-    \item \class{PixelBuffer} provides typed pixel data, with extent sizes
-    \item \class{CoordinateList} is the set of indexes into each dimension
-    \item \class{ExtentList} is the extent in each dimension
-    \item No plane number needed; the coordinate and extent lists
-      determine the plane(s) to fetch
-    \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -594,6 +628,30 @@ int positionWithOffsetToIndex(final int[] position,
     \item Does not cater for reverse progression
     \end{itemize}
   See \filename{util/IntervalIndexer.java}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Generalised nD API (proposed)}
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList coords
+                          ExtentList     extents);
+  \end{lstlisting}
+  or
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList start
+                          CoordinateList end);
+  \end{lstlisting}
+  \begin{block}{Pixel buffer}
+    \begin{itemize}
+    \item \class{PixelBuffer} provides typed pixel data, with extent sizes
+    \item \class{CoordinateList} is the set of indexes into each dimension
+    \item \class{ExtentList} is the extent in each dimension
+    \item No plane number needed; the coordinate and extent lists
+      determine the plane(s) to fetch
+    \end{itemize}
   \end{block}
 \end{frame}
 
