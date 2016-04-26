@@ -20,6 +20,21 @@
 \newcommand{\type}[1]{\texttt{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
 
+\lstdefinelanguage{XML}
+{
+  basicstyle=\ttfamily\footnotesize,
+  morestring=[b]",
+  moredelim=[s][\bfseries\color{black!30!red}]{<}{\ },
+  moredelim=[s][\bfseries\color{black!30!red}]{</}{>},
+  moredelim=[l][\bfseries\color{black!30!red}]{/>},
+  moredelim=[l][\bfseries\color{black!30!red}]{>},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s]{<!--}{-->},
+  commentstyle=\color{black!30!green},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red}
+}
+
 \newenvironment{conditions}
   {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
   {\end{tabular}\par\vspace{\belowdisplayskip}}
@@ -31,14 +46,15 @@
 \begin{document}
 
 \begin{frame}[plain,fragile]
-    \begin{tikzpicture}[remember picture,overlay]
-      \node[minimum width=\paperwidth, minimum height=\paperheight, anchor=north west,remember picture,overlay] (a) {
+  \titlepage
+    \begin{tikzpicture}
+      \node[minimum width=\paperwidth, minimum height=\paperheight, anchor=north west] (a) {
       \begin{tikzpicture}[x=1mm,y=-1mm]
         \pgfmathsetmacro\ax{cos(33)*0.8}
         \pgfmathsetmacro\bx{cos(67)*0.8}
 
       \foreach \col in {0, 1, 2, 3, 4, 5} {
-        \foreach \row in {0, 1, 2, 3, 4} {
+        \foreach \row in {0, 1, 2, 3, 4, 5} {
           \pgfmathsetmacro\acx{\row-20+(((\ax*10)+11+\row)*\col)}
           \pgfmathsetmacro\acy{30-((\bx*10)+11+\col)*\row}
 
@@ -57,9 +73,6 @@
     \end{tikzpicture}
       };
     \end{tikzpicture}
-  \titlepage
-  \begin{center}
-  \end{center}
 \end{frame}
 
 \section[]{Overview}
@@ -561,6 +574,28 @@ byte[] openBytes(int no,
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Proposed model}
+  \begin{lstlisting}[language=XML]
+<DimensionSpace>
+  <Dimension name="S" size=3 position=0 ascending=true/>
+  <Dimension name="X" size=1024 position=2 ascending=true/> 
+  <Dimension name="Y" size=1024 position=1 ascending=false/>
+  ...
+</DimensionSpace>
+  \end{lstlisting}
+
+  \begin{itemize}
+  \item Arbitrary named dimensions
+  \item Logical order implicit, storage order explicit
+  \item Extra modulo-style attributes
+  \item X and Y not special, any order allowed
+  \item Modulo no longer needed
+  \item Could also add \texttt{chunkSize} attribute to add transparent
+    support for tiling/chunking
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Current API}
   \begin{block}{Plane index calculations}
     Compute index from Z, C and T coordinates:
@@ -584,8 +619,25 @@ getZCTCoords(String order,
   \end{block}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Proposed class for calculations}
+
+  \begin{block}{Class \texttt{DimensionSpace}}
+    \begin{itemize}
+    \item Perform nD calculations
+    \item Contains a list of \texttt{Dimension} classes specifying
+      dimension extents, ordering and direction
+    \item Contains precomputed constants (strides, offsets)
+    \item Compute storage offset from logical indices
+    \item Compute logical indices from storage offset
+    \item The generalised implementation of \texttt{getIndex} and
+      \texttt{getCZTCoords}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
 \begin{frame}[fragile]
-  \frametitle{Generalised nD API (proposed for C++)}
+  \frametitle{Proposed implementation for calculations}
   \begin{block}{Plane index calculations}
     Compute index from Z, C and T coordinates:
   \begin{lstlisting}[language=C++]
@@ -608,7 +660,7 @@ storage_index(const coord_type& coord) const
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Generalised nD API (Imglib2)}
+  \frametitle{Existing implementation for calculations (Imglib2)}
   \begin{block}{Plane index calculations}
     Compute index from Z, C and T coordinates:
     \begin{lstlisting}[language=Java]
@@ -632,7 +684,7 @@ int positionWithOffsetToIndex(final int[] position,
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Generalised nD API (proposed)}
+  \frametitle{Proposed generalised pixel methods}
   \begin{lstlisting}[language=Java]
     PixelBuffer getPixels(PixelBuffer    buf,
                           CoordinateList coords
@@ -652,6 +704,27 @@ int positionWithOffsetToIndex(final int[] position,
     \item No plane number needed; the coordinate and extent lists
       determine the plane(s) to fetch
     \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Implementation order}
+  \begin{block}{Key parts}
+    \begin{itemize}
+    \item Model changes
+    \item nD calculations
+    \item nd PixelBuffer
+    \end{itemize}
+  \end{block}
+  \begin{block}{Implementation order}
+    \begin{itemize}
+    \item nD calculations
+    \item nd PixelBuffer
+    \item Model changes
+    \end{itemize}
+    The nD calculations and pixel buffer are a superset of the current
+    model and can represent the current model perfectly, so the model
+    changes can be done last.
   \end{block}
 \end{frame}
 
