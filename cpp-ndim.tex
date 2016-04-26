@@ -75,12 +75,6 @@
     \end{tikzpicture}
 \end{frame}
 
-\section[]{Overview}
-\frame{
-\frametitle{Overview}
-\tableofcontents
-}
-
 \begin{frame}
   \frametitle{History}
   \begin{itemize}
@@ -111,6 +105,30 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+  \begin{lstlisting}[language=Java]
+int
+getIndex(String order,
+         int zSize, int cSize, int tSize, int num,
+         int z, int c, int t)
+  \end{lstlisting}
+  Compute Z, C and T coordinates from an index:
+  \begin{lstlisting}[language=Java]
+int[]
+getZCTCoords(String order,
+             int zSize, int cSize, int tSize, int num,
+             int index);
+  \end{lstlisting}
+  \begin{itemize}
+  \item Limited to three fixed dimensions
+  \item Implementation is inefficient (string parsing and validity checks)
+  \end{itemize}
+  \end{block}
+\end{frame}
+
 \begin{frame}
   \frametitle{Describing a dimension}
   \begin{columns}[c]
@@ -139,8 +157,6 @@
   \end{columns}
 \end{frame}
 
-\section{Basic array calculations}
-
 \begin{frame}[fragile]
   \frametitle{Current API}
   \begin{lstlisting}[language=Java]
@@ -159,8 +175,8 @@ byte[] openBytes(int no,
   \begin{tikzpicture}[remember picture,overlay]
     \node at (current page.north west) {
       \begin{tikzpicture}[y=-1cm,remember picture,overlay]
-        \draw [very thick, black!30!red] (4.8,2.6) ellipse (0.75 cm and 0.25 cm);
-        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,4.1) -- (4.2,2.7);
+        \draw [very thick, black!30!red] (4.8,2.3) ellipse (0.75 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,3.8) -- (4.2,2.4);
       \end{tikzpicture}
     };
   \end{tikzpicture}
@@ -185,8 +201,8 @@ byte[] openBytes(int no,
   \begin{tikzpicture}[remember picture,overlay]
     \node at (current page.north west) {
       \begin{tikzpicture}[y=-1cm,remember picture,overlay]
-        \draw [very thick, black!30!red] (5.15,2.95) ellipse (1.1 cm and 0.3 cm);
-        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,4.1) -- (4.15,3.05);
+        \draw [very thick, black!30!red] (5.15,2.65) ellipse (1.1 cm and 0.3 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,3.8) -- (4.15,2.8);
       \end{tikzpicture}
     };
   \end{tikzpicture}
@@ -211,10 +227,10 @@ byte[] openBytes(int no,
   \begin{tikzpicture}[remember picture,overlay]
     \node at (current page.north west) {
       \begin{tikzpicture}[y=-1cm,remember picture,overlay]
-        \draw [very thick, black!30!red] (5.4,3.32) ellipse (1.3 cm and 0.25 cm);
-        \draw [very thick, black!30!red] (8.05,3.32) ellipse (1.3 cm and 0.25 cm);
-        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (3.5,4.1) -- (4.25,3.4);
-        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (6.25,4.1) -- (6.95,3.4);
+        \draw [very thick, black!30!red] (5.4,3.02) ellipse (1.3 cm and 0.25 cm);
+        \draw [very thick, black!30!red] (8.05,3.02) ellipse (1.3 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (3.5,3.8) -- (4.25,3.1);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (6.25,3.8) -- (6.95,3.1);
       \end{tikzpicture}
     };
   \end{tikzpicture}
@@ -532,6 +548,41 @@ byte[] openBytes(int no,
   \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Addressing: subranges and assignment}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \onslide<1->{
+      \draw[black,very thick] (6,0) rectangle (10,5);
+    }
+    \onslide<2->{
+      \draw[gray,thick,fill=white!70!red] (8,2) rectangle (9,3);
+    }
+    \onslide<3->{
+      \draw [thick, black!30!red, dashed] (8,2) -- (6,6);   
+      \draw [thick, black!30!red, dashed] (9,3) -- (7,7);   
+      \draw[black,very thick,fill=white] (6,6) rectangle (7,7);
+    }
+    \onslide<4->{
+      \draw[black,very thick] (0,0) rectangle (5,4);
+      \draw[gray,thick,fill=white!70!red] (1,1) rectangle (2,2);
+    }
+    \onslide<5->{
+      \draw [thick, black!30!red, dashed] (1,2) -- (4,7);   
+      \draw [thick, black!30!red, dashed] (2,1) -- (5,6);   
+      \draw[black,very thick] (4,6) rectangle (5,7);
+    }
+    \onslide<6->{
+      \draw (5.5,6.5) node {=};
+    }
+    \onslide<7->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!green] (8.5,2.5) -- (1.5,1.5);   
+    }
+  \end{tikzpicture}
+  \end{center}
+
+\end{frame}
+
 \begin{frame}
   \frametitle{Storage addressing with subranges}
   \begin{columns}
@@ -593,30 +644,6 @@ byte[] openBytes(int no,
   \item Could also add \texttt{chunkSize} attribute to add transparent
     support for tiling/chunking
   \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Current API}
-  \begin{block}{Plane index calculations}
-    Compute index from Z, C and T coordinates:
-  \begin{lstlisting}[language=Java]
-int
-getIndex(String order,
-         int zSize, int cSize, int tSize, int num,
-         int z, int c, int t)
-  \end{lstlisting}
-  Compute Z, C and T coordinates from an index:
-  \begin{lstlisting}[language=Java]
-int[]
-getZCTCoords(String order,
-             int zSize, int cSize, int tSize, int num,
-             int index);
-  \end{lstlisting}
-  \begin{itemize}
-  \item Limited to three fixed dimensions
-  \item Implementation is inefficient (string parsing and validity checks)
-  \end{itemize}
-  \end{block}
 \end{frame}
 
 \begin{frame}
@@ -734,31 +761,6 @@ int positionWithOffsetToIndex(final int[] position,
 
 \frame{
   \frametitle{Acknowledgements}
-  \parbox[t]{0.45\textwidth}{
-    \begin{itemize}
-    \item OME Team, Dundee
-      \begin{itemize}
-      \item Jason Swedlow
-      \item Jean-Marie Burel
-      \item Mark Carroll
-      \item Andrew Patterson
-      \item …and the rest of the team
-      \end{itemize}
-    \end{itemize}
-  }
-  \parbox[t]{0.45\textwidth}{
-    \begin{itemize}
-    \item Micron, Oxford
-      \begin{itemize}
-      \item Douglas Russell
-      \end{itemize}
-    \item Glencoe Software
-      \begin{itemize}
-      \item Melissa Linkert
-      \item Josh Moore
-      \end{itemize}
-    \end{itemize}
-  }
 
   \begin{center}
     \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
