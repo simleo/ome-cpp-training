@@ -47,14 +47,12 @@
 
 \begin{frame}[plain,fragile]
   \titlepage
-    \begin{tikzpicture}
-      \node[minimum width=\paperwidth, minimum height=\paperheight, anchor=north west] (a) {
       \begin{tikzpicture}[x=1mm,y=-1mm]
         \pgfmathsetmacro\ax{cos(33)*0.8}
         \pgfmathsetmacro\bx{cos(67)*0.8}
 
       \foreach \col in {0, 1, 2, 3, 4, 5} {
-        \foreach \row in {0, 1, 2, 3, 4, 5} {
+        \foreach \row in {0, 1} {
           \pgfmathsetmacro\acx{\row-20+(((\ax*10)+11+\row)*\col)}
           \pgfmathsetmacro\acy{30-((\bx*10)+11+\col)*\row}
 
@@ -69,8 +67,6 @@
             \draw [thin, blue] ({10+\acx+(\ax*\x)}, {10+\acy-(\bx*\x)}) -- ({10+\acx+10+(\ax * \x)}, {10+\acy-(\bx*\x)});   
           }
         }
-      };
-    \end{tikzpicture}
       };
     \end{tikzpicture}
 \end{frame}
