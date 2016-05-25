@@ -1,0 +1,110 @@
+\documentclass{beamer}
+
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
+
+\include{common}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage{ragged2e}
+
+\tikzstyle{component} = [rectangle, rounded corners, minimum width=5cm, text width=4cm, minimum height=0.8cm,text centered, draw=black, fill=red!30]
+\tikzstyle{repo} = [rectangle, minimum width=5cm, text width=4cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30]
+
+\tikzstyle{arrow} = [thick,->,>=stealth]
+\tikzstyle{darrow} = [thick,<->,>=stealth]
+
+\newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\title{C++ status}
+\author{Roger Leigh}
+\date{2\textsuperscript{nd} June 2016}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+  \titlepage
+
+  \begin{center}
+    \textsl{Progress over the last year and upcoming features}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Component splitting}
+  \begin{center}
+    \begin{tikzpicture}[y=-1cm]
+      \onslide<1->{
+        \node (bfrepo) [repo] {bioformats.git};
+        \node (c1) [component, below of=bfrepo, yshift=-0.3cm] {ome-compat};
+        \node (c2) [component, below of=c1, yshift=-0.3cm] {ome-common};
+        \node (c3) [component, below of=c2, yshift=-0.3cm] {ome-xml};
+        \node (c4) [component, below of=c3, yshift=-0.3cm] {ome-bioformats};
+        \node (c5) [component, below of=c4, yshift=-0.3cm] {ome-qtwidgets};
+
+        \draw [thick] (bfrepo.south) -- (c1.north);
+        \draw [thick] (c1.south) -- (c2.north);
+        \draw [thick] (c2.south) -- (c3.north);
+        \draw [thick] (c3.south) -- (c4.north);
+        \draw [thick] (c4.south) -- (c5.north);
+      }
+      \onslide<2->{
+        \node (sb) [repo, right of=bfrepo, xshift=5cm] {ome-cmake-superbuild.git};
+        \node (commonrepo) [repo, right of=c2, xshift=5cm, yshift=0.7cm] {ome-common-cpp.git};
+        \node (xmlrepo) [repo, right of=c3, xshift=5cm] {(bioformats.git)};
+        \node (filesrepo) [repo, right of=c4, xshift=5cm] {ome-files-cpp.git};
+        \node (qtrepo) [repo, right of=c5, xshift=5cm] {ome-qtwidgets.git};
+
+        \draw [arrow] (bfrepo) -- (sb);
+        \draw [arrow] (c1) -- (commonrepo);
+        \draw [arrow] (c2) -- (commonrepo);
+        \draw [arrow] (c3) -- (xmlrepo);
+        \draw [arrow] (c4) -- (filesrepo);
+        \draw [arrow] (c5) -- (qtrepo);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Major changes since May 2015}
+
+  \begin{itemize}
+  \item Windows support (VS2012, VS2013)
+  \item XML and XSL resolvers
+  \item XML transforms for upgrade/downgrade
+  \item CMake super-build
+  \item Repository split
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Upcoming changes (0.2.0)}
+
+  \begin{itemize}
+  \item Windows support (VS2015)
+  \item 2015 and 2016 model support
+    \begin{itemize}
+    \item Units and Quantities
+    \item Map annotations
+    \item Folders
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Future thoughts}
+
+  \begin{itemize}
+    \item API cleanup
+    \item Modulo support
+    \item HDF5
+    \item Windows DLLs
+    \item nD pixel buffer
+    \item C++11/14
+  \end{itemize}
+\end{frame}
+
+\end{document}
