@@ -1,0 +1,746 @@
+\documentclass{beamer}
+
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
+
+\include{common}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,decorations.markings,matrix,bending}
+
+\newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\program}[1]{\texttt{#1}}
+\newcommand{\variable}[1]{\textsl{#1}}
+\newcommand{\class}[1]{\texttt{#1}}
+\newcommand{\function}[1]{\texttt{#1()}}
+\newcommand{\type}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\lstdefinelanguage{XML}
+{
+  basicstyle=\ttfamily\footnotesize,
+  morestring=[b]",
+  moredelim=[s][\bfseries\color{black!30!red}]{<}{\ },
+  moredelim=[s][\bfseries\color{black!30!red}]{</}{>},
+  moredelim=[l][\bfseries\color{black!30!red}]{/>},
+  moredelim=[l][\bfseries\color{black!30!red}]{>},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s]{<!--}{-->},
+  commentstyle=\color{black!30!green},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red}
+}
+
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
+
+\title{The ZFS file system and volume manager}
+\author{Roger Leigh}
+\date{Feb 2017}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{History}
+  \begin{itemize}
+  \item \href{https://trac.openmicroscopy.org/ome/ticket/3523}{Trac ticket 3523}
+  \item \href{http://www.openmicroscopy.org/site/community/minutes/meetings/june-2010-paris-users-meeting/meeting-notes}{2010 Paris User's meeting}
+  \item Also considered in earlier meetings back to at least 2008
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Current model}
+  \begin{itemize}
+  \item Data model \texttt{DimensionOrder}: X Y Z T C
+    \begin{itemize}
+      \item \texttt{XYZTC}
+      \item \texttt{XYZCT}
+      \item \texttt{XYTZC}
+      \item \texttt{XYTCX}
+      \item \texttt{XYCZT}
+      \item \texttt{XYCTZ}
+    \end{itemize}
+    \pause
+  \item Also subchannel/samples
+  \item Extra ``dimensions'' hacked in with Modulo
+  \item XY always ordered first
+  \item Enumeration can't scale
+  \item Fundamentally limited
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+  \begin{lstlisting}[language=Java]
+int
+getIndex(String order,
+         int zSize, int cSize, int tSize, int num,
+         int z, int c, int t)
+  \end{lstlisting}
+  Compute Z, C and T coordinates from an index:
+  \begin{lstlisting}[language=Java]
+int[]
+getZCTCoords(String order,
+             int zSize, int cSize, int tSize, int num,
+             int index);
+  \end{lstlisting}
+  \begin{itemize}
+  \item Limited to three fixed dimensions
+  \item Implementation is inefficient (string parsing and validity checks)
+  \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Describing a dimension}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Core metadata}
+      \begin{itemize}
+      \item extent (size)
+        \pause
+      \item order (logical)
+        \pause
+      \item order (storage)
+      \item direction (storage)
+      \end{itemize}
+    \end{block}
+    \column{.5\textwidth}
+    \pause
+    \begin{block}{Extended metadata}
+      \begin{itemize}
+      \item dimension type
+      \item unit type e.g. physical size unit
+      \item unit value range e.g. physical size
+      \item labels
+      \item ... essentially some of the Modulo metadata
+      \end{itemize}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Image index}
+    \begin{itemize}
+    \item Plane number for desired ZTC coordinate
+    \item Requires calculation by caller
+    \item Exposes internal implementation details of file format and/or reader
+    \item May not be real if file format is not planar
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (4.8,2.3) ellipse (0.75 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,3.8) -- (4.2,2.4);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Pixel buffer}
+    \begin{itemize}
+    \item Raw byte array
+    \item No pixel type
+    \item No dimension sizes and order
+    \item No padding information
+    \item Difficult to process or delegate to other code
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (5.15,2.65) ellipse (1.1 cm and 0.3 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (2,3.8) -- (4.15,2.8);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Current API}
+  \begin{lstlisting}[language=Java]
+byte[] openBytes(int no,
+                 byte[] buf,
+                 int x, int y, int w, int h);
+  \end{lstlisting}
+  \begin{block}{Starting coordinates and extents}
+    \begin{itemize}
+    \item Separate parameter for every dimension coordinate
+    \item Separate parameter for every dimension extent
+    \item No means of using a range rather than an extent
+    \item Limited to specifying regions on a 2D plane
+    \item No generality
+    \end{itemize}
+  \end{block}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node at (current page.north west) {
+      \begin{tikzpicture}[y=-1cm,remember picture,overlay]
+        \draw [very thick, black!30!red] (5.4,3.02) ellipse (1.3 cm and 0.25 cm);
+        \draw [very thick, black!30!red] (8.05,3.02) ellipse (1.3 cm and 0.25 cm);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (3.5,3.8) -- (4.25,3.1);
+        \draw [-{Latex[scale=1.5]}, very thick, black!30!red] (6.25,3.8) -- (6.95,3.1);
+      \end{tikzpicture}
+    };
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: One dimension}
+
+  \begin{center}
+
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,0) rectangle (\x+1,1);
+    \draw[black,very thick] (0,0) rectangle (6,1);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 0.5) node[black!50!blue] {\x};
+    \draw (0, 0.5) node[anchor=east,black!50!blue] {Index};
+
+    \onslide<2->{
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,1) rectangle (\x+1,2);
+    \draw[black,very thick] (0,1) rectangle (6,2);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 1.5) node[black!50!green] {\x};
+    \draw (0, 1.5) node[anchor=east,black!50!green] {Offset};
+    }
+    \onslide<3->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (0.5,2.6) -- (0.5,2);   
+    \draw (0.5,2.5) node[anchor=north, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (3.5,2) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (4,2.5) node[anchor=north, black!30!red] {stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<4->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index} \cdot \mathrm{stride})
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{Index}
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: One dimension (reversed)}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,0) rectangle (\x+1,1);
+    \draw[black,very thick] (0,0) rectangle (6,1);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw (\x+0.5, 0.5) node[black!50!blue] {\x};
+    \draw (0, 0.5) node[anchor=east,black!50!blue] {Index};
+
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[gray,thick] (\x,1) rectangle (\x+1,2);
+    \draw[black,very thick] (0,1) rectangle (6,2);
+    \foreach \x in {0,1,2,3,4,5}
+      \draw[black!50!green] node at (\x+0.5, 1.5) {%
+    \pgfmathparse{5-\x}%
+    \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+    };
+    \draw (0, 1.5) node[anchor=east,black!50!green] {Offset};
+
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (5.5,2.6) -- (5.5,2);   
+    \draw (5.5,2.5) node[anchor=north, black!30!red] {base=5};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (2.5,2) arc[radius=0.5, start angle=-360, end angle=-180];
+    \draw (2,2.5) node[anchor=north, black!30!red] {stride=-1};
+  \end{tikzpicture}
+
+  \onslide<2->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index} \cdot \mathrm{stride})
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 5 + (\mathrm{Index} \cdot -1)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 5 - \mathrm{Index}
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (row-major)}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \onslide<2->{
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{\x+(5*\y)}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+    }
+    \onslide<3->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (0.5,3) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (1,3.5) node[anchor=north, black!30!red] {x stride=1};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=5};
+    }
+  \end{tikzpicture}
+
+  \onslide<4->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{Index}_x + (\mathrm{Index}_y \cdot 5)
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (column-major)}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{(\x*3)+\y}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+
+    \onslide<2->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=0};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (0.5,3) arc[radius=0.5, start angle=-180, end angle=-360];
+    \draw (1,3.5) node[anchor=north, black!30!red] {x stride=3};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<3->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = (\mathrm{Index}_x \cdot 3) + \mathrm{Index}_y
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: Two dimensions (column-major, yx order)}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \foreach \x in {0,1,2,3,4}
+      \draw[gray,thick] (\x,-1) rectangle (\x+1,0);
+    \foreach \y in {0,1,2}
+      \draw[gray,thick] (-1,\y) rectangle (0,\y);
+    \draw[black,very thick] (0,-1) rectangle (5,0);
+    \draw[black,very thick] (-1,0) rectangle (0,3);
+    \draw[black,very thick] (0,0) rectangle (5,3);
+    \foreach \x in {0,1,2,3,4}
+      \draw (\x+0.5, -0.5) node[black!50!blue] {\x};
+    \foreach \y in {0,1,2}
+      \draw (-0.5,\y+0.5) node[black!50!blue] {\y};
+    \draw (2.5, -1) node[anchor=south,black!50!blue] {x Index};
+    \draw (-1, 1.5) node[anchor=east,black!50!blue] {\rotatebox{90}{y Index}};
+
+    \foreach \x in {0,1,2,3,4}
+      \foreach \y in {0,1,2} {
+        \draw[gray,thick] (\x,\y) rectangle (\x+1,\y+1);
+        \draw[black!50!green] node at (\x+0.5, \y+0.5) {%
+          \pgfmathparse{12+(\x*-3)+\y}%
+          \pgfmathprintnumber[assume math mode=true]{\pgfmathresult}%
+        };
+      }
+      \draw[black,very thick] (0,0) rectangle (5,3);
+      \draw (5, 2.5) node[anchor=west,black!50!green] {Offset};
+
+    \onslide<2->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!red] (-0.5,-0.5) -- (0,0);   
+    \draw (-0.5,-0.5) node[anchor=south east, black!30!red] {base=12};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (4.5,3) arc[radius=0.5, start angle=-360, end angle=-180];
+    \draw (4,3.5) node[anchor=north, black!30!red] {x stride=-3};
+
+    \draw [-{Latex[scale=1.5,flex=1]}, thick, black!30!red] (5,0.5) arc[radius=0.5, start angle=-90, end angle=90];
+    \draw (5.5,1) node[anchor=west, black!30!red] {y stride=1};
+    }
+  \end{tikzpicture}
+
+  \onslide<3->{
+  \begin{equation*}
+    \mathrm{Offset} = \mathrm{base} + (\mathrm{Index}_x \cdot \mathrm{stride}_x) + (\mathrm{Index}_y \cdot \mathrm{stride}_y)
+  \end{equation*}
+  \begin{equation*}
+    \mathrm{Offset} = 12 + (\mathrm{Index}_x \cdot -3) + \mathrm{Index}_y
+  \end{equation*}
+  }
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Logical addressing}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+    \end{conditions}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = \sum\limits_{i=0}^{n-1} (S_i \cdot C_i)
+    \end{equation*}
+    \end{block}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:
+      \begin{equation*}
+        C_i = \frac{I}{S_i}
+      \end{equation*}
+
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Storage addressing}
+  \begin{columns}[c]
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      E & Dimension extent \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+      O & Base offset \\
+    \end{conditions}
+    \end{block}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = O + \sum\limits_{i=0}^{n-1} (S_i \cdot C_i)
+    \end{equation*}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:
+      If ascending:
+      \begin{equation*}
+        C_i = \frac{I}{S_i}
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+      If descending:
+      \begin{equation*}
+        C_i = \frac{(E_i \cdot \lvert S_i \rvert) - S_i - 1}{\lvert S_i \rvert}
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} \lvert S_i \rvert
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Addressing: subranges and assignment}
+  \begin{center}
+  \begin{tikzpicture}[y=-1cm]
+    \onslide<1->{
+      \draw[black,very thick] (6,0) rectangle (10,5);
+    }
+    \onslide<2->{
+      \draw[gray,thick,fill=white!70!red] (8,2) rectangle (9,3);
+    }
+    \onslide<3->{
+      \draw [thick, black!30!red, dashed] (8,2) -- (6,6);   
+      \draw [thick, black!30!red, dashed] (9,3) -- (7,7);   
+      \draw[black,very thick,fill=white] (6,6) rectangle (7,7);
+    }
+    \onslide<4->{
+      \draw[black,very thick] (0,0) rectangle (5,4);
+      \draw[gray,thick,fill=white!70!red] (1,1) rectangle (2,2);
+    }
+    \onslide<5->{
+      \draw [thick, black!30!red, dashed] (1,2) -- (4,7);   
+      \draw [thick, black!30!red, dashed] (2,1) -- (5,6);   
+      \draw[black,very thick] (4,6) rectangle (5,7);
+    }
+    \onslide<6->{
+      \draw (5.5,6.5) node {=};
+    }
+    \onslide<7->{
+    \draw [-{Latex[scale=1.5]}, thick, black!30!green] (8.5,2.5) -- (1.5,1.5);   
+    }
+  \end{tikzpicture}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Storage addressing with subranges}
+  \begin{columns}
+    \column{.5\textwidth}
+    \begin{block}{Terms}
+    \begin{conditions}
+      n & Number of dimensions \\
+      E & Dimension extent \\
+      C & Coordinate \\
+      I & Index \\
+      S & Stride \\
+      O & Base offset \\
+      B & Subrange start offset \\
+    \end{conditions}
+    \end{block}
+    \begin{block}{Linear index from logical coordinate}
+    \begin{equation*}
+      I = O + \sum\limits_{i=0}^{n-1} (S_i \cdot (C_i + B_i))
+    \end{equation*}
+    \end{block}
+    \column{.5\textwidth}
+    \begin{block}{Logical coordinate from linear index}
+      For each dimension $i$:\\ \noindent
+      If ascending:
+      \begin{equation*}
+        C_i = \frac{I}{S_i} - B_i
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} S_i
+      \end{equation*}
+      If descending:
+      \begin{equation*}
+        C_i = \frac{(E_i \cdot \lvert S_i \rvert) - S_i - 1}{\lvert S_i \rvert} - B_i
+      \end{equation*}
+      \begin{equation*}
+        I = I \operatorname{mod} \lvert S_i \rvert
+      \end{equation*}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Proposed model}
+  \begin{lstlisting}[language=XML]
+<DimensionSpace>
+  <Dimension name="S" size=3 position=0 ascending=true/>
+  <Dimension name="X" size=1024 position=2 ascending=true/> 
+  <Dimension name="Y" size=1024 position=1 ascending=false/>
+  ...
+</DimensionSpace>
+  \end{lstlisting}
+
+  \begin{itemize}
+  \item Arbitrary named dimensions
+  \item Logical order implicit, storage order explicit
+  \item Extra modulo-style attributes
+  \item X and Y not special, any order allowed
+  \item Modulo no longer needed
+  \item Could also add \texttt{chunkSize} attribute to add transparent
+    support for tiling/chunking
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Proposed class for calculations}
+
+  \begin{block}{Class \texttt{DimensionSpace}}
+    \begin{itemize}
+    \item Perform nD calculations
+    \item Contains a list of \texttt{Dimension} classes specifying
+      dimension extents, ordering and direction
+    \item Contains precomputed constants (strides, offsets)
+    \item Compute storage offset from logical indices
+    \item Compute logical indices from storage offset
+    \item The generalised implementation of \texttt{getIndex} and
+      \texttt{getCZTCoords}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Proposed implementation for calculations}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+  \begin{lstlisting}[language=C++]
+index_type
+storage_index(const coord_type& coord) const
+{
+  difference_type pos = _base;
+
+  for (std::vector<Dimension>::size_type d = 0; d < size(); ++d)
+    {
+      const Dimension& dim(dimension(d));
+      const DimensionStorageDetail& detail = _detail.at(d);
+      pos += detail.stride * (coord.at(d) + dim.begin);
+    }
+
+  return pos;
+}
+  \end{lstlisting}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Existing implementation for calculations (Imglib2)}
+  \begin{block}{Plane index calculations}
+    Compute index from Z, C and T coordinates:
+    \begin{lstlisting}[language=Java]
+int positionWithOffsetToIndex(final int[] position,
+                              final int[] dimensions,
+                              final int[] offsets)
+{
+  final int maxDim = dimensions.length - 1;
+  int i = position[ maxDim ] - offsets[ maxDim ];
+  for ( int d = maxDim - 1; d >= 0; --d )
+    i = i * dimensions[ d ] + position[ d ] - offsets[ d ];
+  return i;
+}
+    \end{lstlisting}
+    \begin{itemize}
+    \item Avoids stride calculations by iterating backward
+    \item Does not cater for reverse progression
+    \end{itemize}
+  See \filename{util/IntervalIndexer.java}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Proposed generalised pixel methods}
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList coords
+                          ExtentList     extents);
+  \end{lstlisting}
+  or
+  \begin{lstlisting}[language=Java]
+    PixelBuffer getPixels(PixelBuffer    buf,
+                          CoordinateList start
+                          CoordinateList end);
+  \end{lstlisting}
+  \begin{block}{Pixel buffer}
+    \begin{itemize}
+    \item \class{PixelBuffer} provides typed pixel data, with extent sizes
+    \item \class{CoordinateList} is the set of indexes into each dimension
+    \item \class{ExtentList} is the extent in each dimension
+    \item No plane number needed; the coordinate and extent lists
+      determine the plane(s) to fetch
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Implementation order}
+  \begin{block}{Key parts}
+    \begin{itemize}
+    \item Model changes
+    \item nD calculations
+    \item nd PixelBuffer
+    \end{itemize}
+  \end{block}
+  \begin{block}{Implementation order}
+    \begin{itemize}
+    \item nD calculations
+    \item nd PixelBuffer
+    \item Model changes
+    \end{itemize}
+    The nD calculations and pixel buffer are a superset of the current
+    model and can represent the current model perfectly, so the model
+    changes can be done last.
+  \end{block}
+\end{frame}
+
+\appendix
+
+\section[]{Acknowledgements}
+
+\frame{
+  \frametitle{Acknowledgements}
+
+  \begin{center}
+    \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+    \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+    \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+  \end{center}
+}
+
+\end{document}
