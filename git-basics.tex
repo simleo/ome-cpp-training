@@ -1,0 +1,203 @@
+\documentclass{beamer}
+
+\newcommand{\cmd}[1]{\textbf{\texttt{#1}}}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\env}[1]{\texttt{#1}}
+\newcommand{\opt}[1]{\textsl{#1}}
+
+\include{common}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage{ragged2e}
+
+\tikzstyle{head} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{commit} = [rectangle, minimum width=1cm, minimum height=1cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{repo} = [rectangle, minimum width=2cm, minimum height=1cm, text width=2cm, text centered, draw=black, fill=orange!30]
+
+\tikzstyle{arrow} = [thick,->,>=stealth]
+\tikzstyle{darrow} = [thick,<->,>=stealth]
+
+\newcommand*{\abox}[1]{\framebox{\hbox to 0.5cm{\texttt\{{\\hss#1\hss}}}}
+
+\title{Using the \texttt{git} version control system}
+\author{Roger Leigh}
+\date{22\textsuperscript{nd} April 2016}
+
+\begin{document}
+
+\begin{frame}[plain,fragile]
+  \titlepage
+
+  \begin{center}
+  \textsl{I'm an egotistical bastard, and I name all my projects after myself. First `Linux', now `Git'}\hspace{2cm}---Linus Torvalds
+  \end{center}
+\end{frame}
+
+%% \section[]{Overview}
+%% \frame{
+%% \frametitle{Overview}
+%% \tableofcontents
+%% }
+
+\begin{frame}[fragile]
+  \frametitle{Revisions}
+
+  \begin{center}
+    \begin{tikzpicture}[y=-1cm]
+
+      \onslide<1->{
+        \node (rev1) [commit] {Rev 1};
+        \node (rev2) [commit, right of=rev1, xshift=2cm] {Rev 2};
+      }
+      \onslide<2->{
+        \node (rev3) [commit, right of=rev2, xshift=2cm] {Rev 3};
+        \node (rev4) [commit, right of=rev3, xshift=2cm] {Rev 4};
+      }
+      \onslide<1-2>{
+        \draw [arrow] (rev1) -- (rev2);
+      }
+      \onslide<2>{
+      \draw [arrow] (rev2) -- (rev3);
+      \draw [arrow] (rev3) -- (rev4);
+      }
+      \onslide<3->{
+        \path[arrow] (rev1) edge [bend left=45] node[anchor=south] {$\Delta_{1\rightarrow{}2}$} (rev2);
+        \path[arrow] (rev2) edge [bend left=45] node[anchor=south] {$\Delta_{2\rightarrow{}3}$} (rev3);
+        \path[arrow] (rev3) edge [bend left=45] node[anchor=south] {$\Delta_{3\rightarrow{}4}$} (rev4);
+      }
+      \onslide<4->{
+        \path[arrow] (rev2) edge [bend left=45] node[anchor=north] {$-\Delta_{1\rightarrow{}2}$} (rev1);
+        \path[arrow] (rev3) edge [bend left=45] node[anchor=north] {$-\Delta_{2\rightarrow{}3}$} (rev2);
+        \path[arrow] (rev4) edge [bend left=45] node[anchor=north] {$-\Delta_{3\rightarrow{}4}$} (rev3);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Computing and applying deltas (diffs)}
+  \begin{description}
+  \item[\texttt{diff}] Compute the difference between two revisions (two collections of files)
+    \item[\texttt{patch}] Transform one revision to another by applying a diff
+    \end{description}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Branches}
+
+  \begin{center}
+    \begin{tikzpicture}[y=-1cm]
+
+      \onslide<1->{
+        \node (rev1) [commit] {1};
+        \node (rev2) [commit, right of=rev1, xshift=1cm] {2};
+        \draw [arrow] (rev1) -- (rev2);
+      }
+      \onslide<2->{
+        \node (rev3) [commit, right of=rev2, xshift=1cm] {3};
+        \node (rev11) [commit, below of=rev3, yshift=-2cm] {f1};
+        \draw [arrow] (rev2) -- (rev3);
+        \path[arrow] (rev2) edge [bend right=20] node[anchor=north east] {branch} (rev11);
+      }
+      \onslide<3->{
+        \node (rev4) [commit, right of=rev3, xshift=1cm] {4};
+        \node (rev5) [commit, right of=rev4, xshift=1cm] {5};
+        \node (rev12) [commit, right of=rev11, xshift=2cm] {f2};
+
+        \draw [arrow] (rev3) -- (rev4);
+        \draw [arrow] (rev4) -- (rev5);
+        \draw [arrow] (rev11) -- (rev12);
+
+      }
+      \onslide<4->{
+        \node (rev6) [commit, right of=rev5, xshift=1cm] {6};
+        \draw [arrow] (rev5) -- (rev6);
+        \path[arrow] (rev12) edge [bend right=20] node[anchor=north west] {merge} (rev6);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Repository relationships (traditional client-server)}
+
+  \begin{center}
+    \begin{tikzpicture}
+
+      \onslide<1->{
+        \node (remote) [repo] {Remote repository};
+      }
+      \onslide<2->{
+        \node (local2) [repo, below of=remote, yshift=-2cm] {Local checkout};
+        \node (local1) [repo, right of=local2, xshift=2cm] {Local checkout};
+        \node (local3) [repo, left of=local2, xshift=-2cm] {Local checkout};
+        \draw [darrow] (remote) -- (local1);
+        \draw [darrow] (remote) -- (local2);
+        \draw [darrow] (remote) -- (local3);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Repository relationships (git/distributed)}
+
+  \begin{center}
+    \begin{tikzpicture}
+
+      \onslide<1->{
+        \node (local) [repo] {Local repository};
+      }
+      \onslide<2->{
+        \node (workdir) [repo, left of=local, xshift=-2cm] {Working directory};
+        \draw [arrow] (local) -- (workdir);
+      }
+      \onslide<3->{
+        \node (remote2) [repo, right of=local, xshift=2cm] {Remote repository};
+        \node (remote1) [repo, above of=remote2, yshift=1cm] {Remote repository};
+        \node (remote3) [repo, below of=remote2, yshift=-1cm] {Remote repository};
+        \draw [darrow] (local) -- (remote1);
+        \draw [arrow] (remote2) -- (local);
+        \draw [arrow] (remote3) -- (local);
+      }
+      \onslide<4->{
+        \node (index) [repo, below right of=workdir, yshift=-2cm] {Index (staging)};
+        \draw [darrow] (workdir) -- (index);
+        \draw [darrow] (local) -- (index);
+      }
+      \onslide<5->{
+        \node (stash) [repo, left of=index, xshift=-2cm] {Stash};
+        \draw [darrow] (workdir) -- (stash);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Object store types}
+
+  \begin{description}
+  \item[blob] Raw file content; referenced by SHA1 hash
+    \pause
+  \item[tree] Directory, containing blobs and nested trees; referenced by SHA1 hash
+    \pause
+  \item[commit] Change set, containing tree hash, parent hash, author+committer, description; referenced by SHA1 hash
+    \pause
+  \item[tag] Label for a commit, containing commit hash and description; referenced by name
+    \pause
+  \item[ref] Branch name/``head'', pointing to a commit hash; referenced by name
+  \end{description}
+\end{frame}
+
+%% \section[]{Acknowledgements}
+
+%% \frame{
+%%   \frametitle{Acknowledgements}
+%%   \begin{center}
+%%     \vcenteredhbox{\includegraphics[width=0.25\textwidth]{ome}} \hfill
+%%     \vcenteredhbox{\includegraphics[width=0.2\textwidth]{dundee}}\hfill
+%%     \vcenteredhbox{\includegraphics[width=0.5\textwidth]{wellcome}}
+%%   \end{center}
+%% }
+
+\end{document}
