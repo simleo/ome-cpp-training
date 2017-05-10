@@ -128,7 +128,22 @@
   \frametitle{Python API}
 
   \begin{itemize}
+  \item \url{https://github.com/ome/ome-files-py}
+  \item Core: Python extension module that wraps the C++ API
+  \item Can open image planes as NumPy arrays
+  \item Work in progress: exposes a subset of \texttt{OMETIFFReader}
   \end{itemize}
+  \begin{lstlisting}
+    import ome_files
+    import matplotlib.pyplot as plt
+
+    reader = ome_files.OMETIFFReader()
+    reader.set_id("tubhiswt_C0.ome.tif")
+    pixels = reader.open_array(0)
+    reader.close()
+    plt.imshow(pixels, cmap="gray")
+  \end{lstlisting}
+
 \end{frame}
 
 \begin{frame}[fragile]
