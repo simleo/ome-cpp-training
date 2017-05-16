@@ -12,6 +12,7 @@
 
 \tikzstyle{component} = [rectangle, rounded corners, minimum width=5cm, text width=4cm, minimum height=0.8cm,text centered, draw=black, fill=red!30]
 \tikzstyle{repo} = [rectangle, minimum width=5cm, text width=4cm, minimum height=0.8cm, text centered, draw=black, fill=orange!30]
+\tikzstyle{newrepo} = [rectangle, minimum width=5cm, text width=4cm, minimum height=0.8cm, text centered, draw=black, fill=orange!60]
 
 \tikzstyle{arrow} = [thick,->,>=stealth]
 \tikzstyle{darrow} = [thick,<->,>=stealth]
@@ -53,7 +54,7 @@
       \onslide<2->{
         \node (sb) [repo, right of=bfrepo, xshift=5cm] {ome-cmake-superbuild.git};
         \node (commonrepo) [repo, right of=c2, xshift=5cm, yshift=0.7cm] {ome-common-cpp.git};
-        \node (xmlrepo) [repo, right of=c3, xshift=5cm] {ome-model.git};
+        \node (xmlrepo) [newrepo, right of=c3, xshift=5cm] {ome-model.git};
         \node (filesrepo) [repo, right of=c4, xshift=5cm] {ome-files-cpp.git};
         \node (qtrepo) [repo, right of=c5, xshift=5cm] {ome-qtwidgets.git};
 
@@ -76,6 +77,7 @@
   \item Dropped support for VS2012
   \item Added command line tools
   \item Numerous fixes and enhancements
+    \pause
   \item DLLs not yet supported
   \end{itemize}
 \end{frame}
@@ -86,6 +88,7 @@
   \begin{itemize}
   \item Added 2015-01 model support
   \item Added 2016-06 model support
+    \pause
   \item BinData
   \item Units
   \item Map annotations
@@ -98,13 +101,19 @@
 
   \begin{itemize}
   \item Performance testing
-  \item Default strip size heuristic
-  \item OME-TIFF validity checks, metadata caching, file caching, plane element handling
-  \item writer compression
-  \item interleaving / PlanarConfiguration
-  \item IFD offset caching
-    
+  \item added default strip size heuristic
+  \item added OME-TIFF validity checks, metadata caching, file caching, plane element handling
+  \item added TIFF compression
+  \item fixed interleaving (PlanarConfiguration) behaviour
+  \item added IFD offset caching
   \end{itemize}
+
+  \begin{lstlisting}[language=C++]
+    writer.setCompression("lzw");
+    writer.setInterleaved(false);
+    writer.setTileSizeX(512U);
+    writer.setTileSizeY(512U);
+  \end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -115,13 +124,36 @@
   \item C++11/14
   \item Updated examples
   \end{itemize}
+  \pause
+
+  \begin{lstlisting}[language=C++]
+    typedef model::primitives::Quantity
+      <model::enums::UnitsLength,
+       model::primitives::PositiveFloat> PositiveLength;
+    metadatastore.setPixelsPhysicalSizeX
+      (PositiveLength(118.2, model::enums::UnitsLength::MICROMETER), 0);
+
+    // C++11
+    metadatastore.setPixelsPhysicalSizeX
+      ({118.2, UnitsLength::MICROMETER}, 0);
+
+    //  Low level Boost.Units
+    micrometre_quantity len(118.2);
+  \end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Performance testing}
+  \begin{centering}
+    \includegraphics[width=0.8\textwidth]{cpp-dundee-2017-figures/files-suppfig5}
+  \end{centering}
+\end{frame}
 
-  \begin{itemize}
-  \end{itemize}
+\begin{frame}[fragile]
+  \frametitle{Performance testing}
+  \begin{centering}
+    \includegraphics[width=0.8\textwidth]{cpp-dundee-2017-figures/files-suppfig6}
+  \end{centering}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -133,7 +165,7 @@
   \item Can open image planes as NumPy arrays
   \item Work in progress: exposes a subset of \texttt{OMETIFFReader}
   \end{itemize}
-  \begin{lstlisting}
+  \begin{lstlisting}[language=Python]
     import ome_files
     import matplotlib.pyplot as plt
 
