@@ -165,17 +165,28 @@
   \item Can open image planes as NumPy arrays
   \item Work in progress: exposes a subset of \texttt{OMETIFFReader}
   \end{itemize}
-  \begin{lstlisting}[language=Python]
-    import ome_files
-    import matplotlib.pyplot as plt
+  \begin{columns}
+    \begin{column}{0.05\textwidth}
+    \end{column}
+    \begin{column}{0.65\textwidth}
+      \centering
+      \begin{lstlisting}[language=Python]
+import ome_files
+import matplotlib.pyplot as plt
 
-    reader = ome_files.OMETIFFReader()
-    reader.set_id("tubhiswt_C0.ome.tif")
-    pixels = reader.open_array(0)
-    reader.close()
-    plt.imshow(pixels, cmap="gray")
-  \end{lstlisting}
-
+reader = ome_files.OMETIFFReader()
+reader.set_id("tubhiswt_C0.ome.tif")
+pixels = reader.open_array(0)
+reader.close()
+plt.imshow(pixels, cmap="gray")
+plt.show()
+      \end{lstlisting}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \centering
+      \includegraphics[width=0.85\textwidth]{cpp-dundee-2017-figures/openbytes.png}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
